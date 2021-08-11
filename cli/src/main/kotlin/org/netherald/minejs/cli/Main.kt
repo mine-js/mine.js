@@ -12,8 +12,8 @@ import java.lang.UnsupportedOperationException
 import java.util.*
 
 fun main() {
-    println("Loading scripts...")
-    ScriptLoader.load(File(System.getProperty("user.dir") + File.pathSeparator + "scripts"), Platform.CLI, PlayerManagerImpl(), ConsoleImpl())
+    println("Loading scripts(${File(System.getProperty("user.dir") + File.separator + "scripts").absolutePath})...")
+    ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(), ConsoleImpl())
     var exited = false
     val scanner = Scanner(System.`in`)
 
@@ -33,6 +33,9 @@ fun main() {
                 })
                 add("player", createObjectForPlayer(Player("netherald"), runtime))
             })
+        } else if(read.startsWith("reload")) {
+            ScriptLoader.unload()
+            ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(), ConsoleImpl())
         }
     }
 }
@@ -45,11 +48,19 @@ fun createObjectForPlayer(player: Player, runtime: V8) : V8Object {
             player.sendMessage(parameters[0] as String)
         }
     }, "send")
+    return res
 }
 
 class ConsoleImpl : Console() {
     override fun log(content: Any, fileName: String) {
-        println("[LOG] [$fileName] $content")
+        var baked = content
+        if(content is V8Object) {
+            baked = ""
+            for (key in content.keys) {
+                baked += key
+            }
+        }
+        println("[LOG] [$fileName] $baked")
     }
 }
 
