@@ -1,11 +1,12 @@
-package org.netherald.javaskript.cli
+package org.netherald.minejs.cli
 
 import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
-import org.netherald.javaskript.common.Platform
-import org.netherald.javaskript.common.PlayerManager
-import org.netherald.javaskript.common.ScriptLoader
+import org.netherald.minejs.common.Platform
+import org.netherald.minejs.common.PlayerManager
+import org.netherald.minejs.common.ScriptLoader
+import org.netherald.minejs.common.Console
 import java.io.File
 import java.lang.UnsupportedOperationException
 import java.util.*
@@ -46,7 +47,7 @@ fun createObjectForPlayer(player: Player, runtime: V8) : V8Object {
     }, "send")
 }
 
-class ConsoleImpl : org.netherald.javaskript.common.Console() {
+class ConsoleImpl : Console() {
     override fun log(content: Any, fileName: String) {
         println("[LOG] [$fileName] $content")
     }
