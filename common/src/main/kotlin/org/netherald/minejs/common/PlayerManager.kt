@@ -1,4 +1,4 @@
-package org.netherald.javaskript.common
+package org.netherald.minejs.common
 
 import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Array

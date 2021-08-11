@@ -1,4 +1,4 @@
-package org.netherald.javaskript.common
+package org.netherald.minejs.common
 
 import com.eclipsesource.v8.*
 import java.io.File

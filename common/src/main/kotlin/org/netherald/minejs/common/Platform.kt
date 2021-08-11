@@ -1,4 +1,4 @@
-package org.netherald.javaskript.common
+package org.netherald.minejs.common
 
 enum class Platform(name: String) {
 
