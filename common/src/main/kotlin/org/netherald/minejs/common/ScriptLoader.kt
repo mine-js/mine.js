@@ -31,7 +31,13 @@ object ScriptLoader {
 
     fun invokeEvent(name: String, v8Object: V8Object) {
         for (runtime in runtimes) {
-            runtime.value.executeVoidFunction(name, V8Array(runtime.value).push(v8Object))
+            try {
+                runtime.value.executeVoidFunction(name, V8Array(runtime.value).push(v8Object))
+            } catch(e: V8ScriptExecutionException) {
+                if(!e.jsMessage.startsWith("TypeError: undefined")) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
 
@@ -39,6 +45,7 @@ object ScriptLoader {
         if(scriptDirectory.isDirectory) {
             for (file in scriptDirectory.listFiles()) {
                 if(file.name.endsWith(".js")) {
+                    console.log("Loading ${file.name}", "core")
                     lateinit var runtime: V8
                     if(runtimes.contains(file))
                         runtime = runtimes[file]!!
@@ -74,7 +81,7 @@ object ScriptLoader {
 
     fun unload() {
         for (runtime in runtimes) {
-            runtime.value.release()
+            //runtime.value.release()
             runtimes.remove(runtime.key)
         }
     }
