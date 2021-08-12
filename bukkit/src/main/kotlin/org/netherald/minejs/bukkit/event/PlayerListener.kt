@@ -3,16 +3,19 @@ package org.netherald.minejs.bukkit.event
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.TranslatableComponent
+import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.plugin.Plugin
 import org.netherald.minejs.bukkit.utils.ObjectUtils
 import org.netherald.minejs.common.ScriptLoader
 
-class PlayerListener : Listener {
+class PlayerListener(val plugin: Plugin) : Listener {
     @EventHandler
     fun playerMove(event: PlayerMoveEvent) {
         ScriptLoader.invokeEvent("onPlayerMove", ScriptLoader.createV8Object {
@@ -35,7 +38,7 @@ class PlayerListener : Listener {
     fun playerJoin(event: PlayerJoinEvent) {
         ScriptLoader.invokeEvent("onPlayerJoin", ScriptLoader.createV8Object {
             add("player", ObjectUtils.createPlayerObject(event.player, runtime))
-            add("joinMessage", (event.joinMessage() as TextComponent).content())
+            add("joinMessage", event.joinMessage)
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
                     event.joinMessage(Component.text(arguments[0].toString()))
@@ -48,7 +51,7 @@ class PlayerListener : Listener {
     fun playerQuit(event: PlayerQuitEvent) {
         ScriptLoader.invokeEvent("onPlayerQuit", ScriptLoader.createV8Object {
             add("player", ObjectUtils.createPlayerObject(event.player, runtime))
-            add("quitMessage", (event.quitMessage() as TextComponent).content())
+            add("quitMessage", event.quitMessage)
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
                     event.quitMessage(Component.text(arguments[0].toString()))
@@ -59,14 +62,16 @@ class PlayerListener : Listener {
 
     @EventHandler
     fun asyncChat(event: AsyncChatEvent) {
-        ScriptLoader.invokeEvent("onPlayerChat", ScriptLoader.createV8Object {
-            add("player", ObjectUtils.createPlayerObject(event.player, runtime))
-            add("message", (event.message() as TextComponent).content())
-            registerJavaMethod({ receiver, arguments ->
-                if (arguments.length() > 0) {
-                    event.message(Component.text(arguments[0].toString()))
-                }
-            }, "setMessage")
+        Bukkit.getScheduler().runTask(plugin, Runnable {
+            ScriptLoader.invokeEvent("onPlayerChat", ScriptLoader.createV8Object {
+                add("player", ObjectUtils.createPlayerObject(event.player, runtime))
+                add("message", (event.message() as TextComponent).content())
+                registerJavaMethod({ receiver, arguments ->
+                    if (arguments.length() > 0) {
+                        event.message(Component.text(arguments[0].toString()))
+                    }
+                }, "setMessage")
+            })
         })
     }
 

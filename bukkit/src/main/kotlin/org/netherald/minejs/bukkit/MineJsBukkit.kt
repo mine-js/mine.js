@@ -15,7 +15,7 @@ MineJsBukkit : JavaPlugin() {
     val scriptsDir = File("plugins${File.separator}scripts")
 
     override fun onEnable() {
-        Bukkit.getPluginManager().registerEvents(PlayerListener(), this)
+        Bukkit.getPluginManager().registerEvents(PlayerListener(this), this)
 
         logger.info("Loading scripts...")
         if(!scriptsDir.exists())
