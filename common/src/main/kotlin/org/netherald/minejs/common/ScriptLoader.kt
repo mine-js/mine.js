@@ -78,6 +78,12 @@ object ScriptLoader {
                     }, "log")
                     runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
                         if(parameters.length() > 0)
+                            return@JavaCallback JavaAccsessor.run(runtime, parameters[0] as String)
+                        else
+                            return@JavaCallback null
+                    }, "jclass")
+                    runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
+                        if(parameters.length() > 0)
                             return@JavaCallback playerManager.playerOf(runtime, parameters[0] as String)
                         else
                             return@JavaCallback null
