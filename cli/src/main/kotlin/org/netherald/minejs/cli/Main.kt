@@ -32,6 +32,13 @@ fun main() {
                     add("z", 2)
                 })
                 add("player", createObjectForPlayer(Player("netherald"), runtime))
+                registerJavaMethod({ receiver, arguments ->
+                    if(arguments.length() > 0) {
+                        if(arguments[0] == true) {
+                            println("Event Cancelled")
+                        }
+                    }
+                }, "setCancelled")
             })
         } else if(read.startsWith("reload")) {
             ScriptLoader.unload()

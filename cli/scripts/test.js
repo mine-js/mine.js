@@ -4,4 +4,5 @@ function onInit() {
 
 function onPlayerMove(event) {
     console.log(event.from.x)
+    event.setCancelled(true)
 }
