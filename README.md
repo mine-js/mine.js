@@ -1,5 +1,5 @@
-# mine.js(Develop-in)
-Minecraft Java Edition Scripting with JS(V8 Engine)
+# mine.js(Developing)
+Minecraft Java Edition Scripting with JS(V8 Engine) by Netherald
 ## How to apply?
 Download Paper or Bungee Version. and put it to plugins folder.\
 Script folder is `plugins/js`!
