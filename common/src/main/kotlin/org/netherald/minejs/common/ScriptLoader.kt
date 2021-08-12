@@ -41,7 +41,7 @@ object ScriptLoader {
         }
     }
 
-    fun load(scriptDirectory: File, platform: Platform, playerManager: PlayerManager, console: Console) {
+    fun load(scriptDirectory: File, platform: Platform, playerManager: PlayerManager, itemManager: ItemManager, console: Console) {
         if(scriptDirectory.isDirectory) {
             for (file in scriptDirectory.listFiles()) {
                 if(file.name.endsWith(".js")) {
@@ -73,6 +73,12 @@ object ScriptLoader {
                         else
                             return@JavaCallback null
                     }, "playerOf")
+                    runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
+                        if (parameters.length() > 0)
+                            return@JavaCallback itemManager.itemOf(runtime,parameters[0] as String)
+                        else
+                            return@JavaCallback null
+                    },"itemOf")
                     runtime.executeVoidFunction("onInit", V8Array(runtime))
                 }
             }

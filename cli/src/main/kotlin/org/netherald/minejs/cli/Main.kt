@@ -3,17 +3,14 @@ package org.netherald.minejs.cli
 import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
-import org.netherald.minejs.common.Platform
-import org.netherald.minejs.common.PlayerManager
-import org.netherald.minejs.common.ScriptLoader
-import org.netherald.minejs.common.Console
+import org.netherald.minejs.common.*
 import java.io.File
 import java.lang.UnsupportedOperationException
 import java.util.*
 
 fun main() {
     println("Loading scripts(${File(System.getProperty("user.dir") + File.separator + "scripts").absolutePath})...")
-    ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(), ConsoleImpl())
+    ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(),ItemManagerImpl() ,ConsoleImpl())
     var exited = false
     val scanner = Scanner(System.`in`)
 
@@ -42,7 +39,7 @@ fun main() {
             })
         } else if(read.startsWith("reload")) {
             ScriptLoader.unload()
-            ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(), ConsoleImpl())
+            ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(),ItemManagerImpl(),ConsoleImpl())
         }
     }
 }
@@ -55,6 +52,12 @@ fun createObjectForPlayer(player: Player, runtime: V8) : V8Object {
             player.sendMessage(parameters[0] as String)
         }
     }, "send")
+    return res
+}
+
+fun createObjectForItem(item : Item, runtime : V8) : V8Object {
+    val res = V8Object(runtime)
+    res.add("name",item.name)
     return res
 }
 
@@ -82,5 +85,11 @@ class PlayerManagerImpl : PlayerManager {
 
     override fun playerOf(runtime: V8, name: String): V8Object {
         return createObjectForPlayer(Player("netherald"), runtime)
+    }
+}
+
+class ItemManagerImpl : ItemManager {
+    override fun itemOf(runtime: V8, material: String): V8Object {
+        return V8Array(runtime).push(createObjectForItem(Item("netherald"),runtime))
     }
 }
