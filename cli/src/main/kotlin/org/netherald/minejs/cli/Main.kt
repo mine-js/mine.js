@@ -7,23 +7,48 @@ import org.netherald.minejs.common.*
 import java.io.File
 import java.lang.UnsupportedOperationException
 import java.util.*
+import kotlin.collections.ArrayList
+
+lateinit var commands: ArrayList<Command>
 
 fun main() {
     println("Loading scripts(${File(System.getProperty("user.dir") + File.separator + "scripts").absolutePath})...")
-    ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(),ItemManagerImpl() ,ConsoleImpl())
+    ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(),ItemManagerImpl() ,ConsoleImpl(), CommandManagerImpl())
     var exited = false
     val scanner = Scanner(System.`in`)
 
     while(!exited) {
         val read = scanner.next()
+        if(read.startsWith("/")) {
+            for (item in commands) {
+                val args = read.split(" ").toTypedArray().copyOfRange(1, read.split(" ").size)
+                val argsV8 = V8Array(item.runtime)
+                for(arg in args) {
+                    argsV8.push(arg)
+                }
+                val commandName = read.split(" ")[0]
+                println("CommandName: $commandName, ItemName: ${item.name}")
+                if("/${item.name}" == commandName || !item.alias.filter { str -> "/$str" == commandName }.isNullOrEmpty()) {
+                    val param = V8Object(item.runtime)
+                    param.run {
+                        add("sender", createObjectForPlayer(Player("netherald"), runtime))
+                        add("args", argsV8)
+                    }
+                    item.callback.call(item.runtime, V8Array(item.runtime).push(param))
+                } else {
+                    println("Invalid Command!")
+                }
+            }
+            continue
+        }
         if(read.startsWith("move_event")) {
-            ScriptLoader.invokeEvent("onPlayerMove", ScriptLoader.createV8Object {
-                add("from", ScriptLoader.createV8Object {
+            ScriptLoader.invokeEvent("onPlayerMove") {
+                add("from", V8Object(runtime).run {
                     add("x", 1)
                     add("y", 1)
                     add("z", 1)
                 })
-                add("to", ScriptLoader.createV8Object {
+                add("to", V8Object(runtime).run {
                     add("x", 2)
                     add("y", 2)
                     add("z", 2)
@@ -36,10 +61,13 @@ fun main() {
                         }
                     }
                 }, "setCancelled")
-            })
+            }
         } else if(read.startsWith("reload")) {
             ScriptLoader.unload()
-            ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(),ItemManagerImpl(),ConsoleImpl())
+            ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(),ItemManagerImpl(),ConsoleImpl(), CommandManagerImpl())
+        } else if(read.startsWith("stop")) {
+            ScriptLoader.unload()
+            exited = true
         }
     }
 }
@@ -59,6 +87,17 @@ fun createObjectForItem(item : Item, runtime : V8) : V8Object {
     val res = V8Object(runtime)
     res.add("name",item.name)
     return res
+}
+
+class CommandManagerImpl : CommandManager {
+    override fun registerCommands(arr: ArrayList<Command>) {
+        commands = arr
+    }
+
+    override fun unloadCommands() {
+        commands.clear()
+    }
+
 }
 
 class ConsoleImpl : Console() {
