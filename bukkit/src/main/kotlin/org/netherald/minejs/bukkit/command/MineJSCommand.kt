@@ -19,10 +19,10 @@ class MineJSCommand(private val plugin: MineJsBukkit) : CommandExecutor {
             return true
         }
         if (args[0] == "reload") {
-            sender.sendMessage(Component.text("${ChatColor.RED}Loading scripts..."))
+            sender.sendMessage(Component.text("${ChatColor.RED}Reloading scripts..."))
             ScriptLoader.unload()
             ScriptLoader.load(plugin.scriptsDir, Platform.BUKKIT, PlayerManagerImpl(),ItemManagerImpl() ,ConsoleImpl(plugin))
-            sender.sendMessage(Component.text("${ChatColor.GREEN}Complete loading scripts"))
+            sender.sendMessage(Component.text("${ChatColor.GREEN}Complete reloading scripts"))
 
             return true
         }
