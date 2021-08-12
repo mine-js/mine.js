@@ -6,6 +6,7 @@ import org.netherald.minejs.bukkit.command.MineJSCommand
 import org.netherald.minejs.bukkit.command.MineJSTabCompleter
 import org.netherald.minejs.bukkit.event.PlayerListener
 import org.netherald.minejs.bukkit.impl.ConsoleImpl
+import org.netherald.minejs.bukkit.impl.ItemManagerImpl
 import org.netherald.minejs.bukkit.impl.PlayerManagerImpl
 import org.netherald.minejs.common.Platform
 import org.netherald.minejs.common.ScriptLoader
@@ -25,7 +26,7 @@ MineJsBukkit : JavaPlugin() {
         logger.info("Loading scripts...")
         if(!scriptsDir.exists())
             scriptsDir.mkdir()
-        ScriptLoader.load(scriptsDir, Platform.BUKKIT, PlayerManagerImpl(), ConsoleImpl(this))
+        ScriptLoader.load(scriptsDir, Platform.BUKKIT, PlayerManagerImpl(), ItemManagerImpl(), ConsoleImpl(this))
     }
 
 }
