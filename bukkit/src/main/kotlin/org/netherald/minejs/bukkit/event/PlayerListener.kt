@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.Plugin
+import org.netherald.minejs.bukkit.utils.MessageUtils
 import org.netherald.minejs.bukkit.utils.ObjectUtils
 import org.netherald.minejs.common.ScriptLoader
 
@@ -38,10 +39,10 @@ class PlayerListener(val plugin: Plugin) : Listener {
     fun playerJoin(event: PlayerJoinEvent) {
         ScriptLoader.invokeEvent("onPlayerJoin", ScriptLoader.createV8Object {
             add("player", ObjectUtils.createPlayerObject(event.player, runtime))
-            add("joinMessage", event.joinMessage)
+            add("joinMessage", MessageUtils.toMiniMessage(event.joinMessage()))
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
-                    event.joinMessage(Component.text(arguments[0].toString()))
+                    event.joinMessage(MessageUtils.build(arguments[0].toString()))
                 }
             }, "setJoinMessage")
         })
@@ -51,10 +52,10 @@ class PlayerListener(val plugin: Plugin) : Listener {
     fun playerQuit(event: PlayerQuitEvent) {
         ScriptLoader.invokeEvent("onPlayerQuit", ScriptLoader.createV8Object {
             add("player", ObjectUtils.createPlayerObject(event.player, runtime))
-            add("quitMessage", event.quitMessage)
+            add("quitMessage", MessageUtils.toMiniMessage(event.quitMessage()))
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
-                    event.quitMessage(Component.text(arguments[0].toString()))
+                    event.quitMessage(MessageUtils.build(arguments[0].toString()))
                 }
             }, "setQuitMessage")
         })
@@ -65,10 +66,10 @@ class PlayerListener(val plugin: Plugin) : Listener {
         Bukkit.getScheduler().runTask(plugin, Runnable {
             ScriptLoader.invokeEvent("onPlayerChat", ScriptLoader.createV8Object {
                 add("player", ObjectUtils.createPlayerObject(event.player, runtime))
-                add("message", (event.message() as TextComponent).content())
+                add("message", MessageUtils.toMiniMessage(event.message()))
                 registerJavaMethod({ receiver, arguments ->
                     if (arguments.length() > 0) {
-                        event.message(Component.text(arguments[0].toString()))
+                        event.message(MessageUtils.build(arguments[0] as String))
                     }
                 }, "setMessage")
             })

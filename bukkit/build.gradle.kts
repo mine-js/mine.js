@@ -9,6 +9,7 @@ repositories {
 dependencies {
     implementation(project(":common"))
     compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
+    implementation("net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT")
     implementation("com.eclipsesource.j2v8:j2v8:6.2.0")
     implementation("com.eclipsesource.j2v8:j2v8_win32_x86_64:4.6.0")
     implementation("com.eclipsesource.j2v8:j2v8_linux_x86_64:4.6.0")
@@ -17,10 +18,10 @@ dependencies {
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "16"
+        kotlinOptions.jvmTarget = "15"
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "16"
+        kotlinOptions.jvmTarget = "15"
     }
 
     create<Jar>("sourceJar") {
