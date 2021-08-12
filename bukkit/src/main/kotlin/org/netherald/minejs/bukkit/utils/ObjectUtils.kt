@@ -5,6 +5,7 @@ import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
 import org.bukkit.Location
 import org.bukkit.World
+import org.bukkit.block.Block
 import org.bukkit.entity.Player
 
 class ObjectUtils {
@@ -36,6 +37,12 @@ class ObjectUtils {
         }
 
         fun createWorldObject(world: World, runtime: V8): V8Object {
+            val res = V8Object(runtime)
+            // 프젝이 해주겠죠?
+            return res;
+        }
+
+        fun createBlockObject(block: Block, runtime: V8?): V8Object {
             val res = V8Object(runtime)
             // 프젝이 해주겠죠?
             return res;
