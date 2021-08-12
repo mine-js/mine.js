@@ -3,15 +3,22 @@ package org.netherald.minejs.bukkit.impl
 import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
+import org.bukkit.Bukkit
+import org.netherald.minejs.bukkit.utils.ObjectUtils.Companion.createPlayerObject
 import org.netherald.minejs.common.PlayerManager
 import java.lang.UnsupportedOperationException
 
 class PlayerManagerImpl : PlayerManager {
 
     override fun getPlayers(runtime: V8): V8Array {
-        // V8 Array - V8Array()
-        // array.push(Object) - Push obj
-        TODO("Get Players with V8 Array")
+        val array = V8Array(runtime)
+        for (player in Bukkit.getOnlinePlayers()) {
+            val playerArray = createPlayerObject(player, runtime)
+            array.push(playerArray)
+            playerArray.release()
+        }
+
+        return array
     }
 
     override fun getPlayersOnServer(runtime: V8, server: String): V8Array {
@@ -19,7 +26,8 @@ class PlayerManagerImpl : PlayerManager {
     }
 
     override fun playerOf(runtime: V8, name: String): V8Object {
-        TODO("Get player with standard on 음챗only 채널")
+        val player = Bukkit.getPlayer(name)
+        return if (player != null) createPlayerObject(player, runtime)
+            else V8Object(runtime)
     }
-
 }
