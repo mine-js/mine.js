@@ -13,6 +13,10 @@ import org.netherald.minejs.common.ScriptLoader
 
 class MineJSCommand(private val plugin: MineJsBukkit) : CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
+        if (args.isEmpty()) {
+            sendErrorMessage(sender)
+            return true
+        }
         if (args[0] == "reload") {
             sender.sendMessage(Component.text("${ChatColor.RED}Loading scripts..."))
             ScriptLoader.unload()
@@ -21,6 +25,11 @@ class MineJSCommand(private val plugin: MineJsBukkit) : CommandExecutor {
 
             return true
         }
-        return false
+        sendErrorMessage(sender)
+        return true;
+    }
+
+    private fun sendErrorMessage(sender: CommandSender) {
+        sender.sendMessage("${ChatColor.RED}Syntax: /minejs [reload]")
     }
 }

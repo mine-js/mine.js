@@ -13,10 +13,8 @@ class MineJSTabCompleter : TabCompleter {
         args: Array<out String>
     ): List<String> {
         val list: MutableList<String> = ArrayList()
-        if (args.isEmpty()) {
+        if (args.size == 1) {
             list.add("reload")
-        } else if (args[0] == "reload") {
-            list.clear()
         }
         return list
     }
