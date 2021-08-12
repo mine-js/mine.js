@@ -1,3 +1,7 @@
+plugins {
+    id("com.github.johnrengelman.shadow") version "7.0.0"
+}
+
 dependencies {
     implementation(project(":common"))
     implementation("com.eclipsesource.j2v8:j2v8:6.2.0")
@@ -6,9 +10,6 @@ dependencies {
     implementation("com.eclipsesource.j2v8:j2v8_macosx_x86_64:4.6.0")
 }
 
-val shade = configurations.create("shade")
-shade.extendsFrom(configurations.implementation.get())
-
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "16"
@@ -16,22 +17,9 @@ tasks {
     compileTestKotlin {
         kotlinOptions.jvmTarget = "16"
     }
-    jar {
-        from(shade.map {if (it.isDirectory) it else zipTree(it)})
-    }
 
     create<Jar>("sourceJar") {
         archiveClassifier.set("source")
         from(sourceSets["main"].allSource)
-    }
-
-    create<Copy>("copyToServer") {
-        from(jar)
-        val plugins = File(rootDir, ".server/plugins")
-        if (File(shade.artifacts.files.asPath).exists()) {
-            into(File(plugins, "update"))
-        } else {
-            into(plugins)
-        }
     }
 }
