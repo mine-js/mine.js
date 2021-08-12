@@ -7,6 +7,7 @@ import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
+import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 
 object ObjectUtils {
@@ -16,6 +17,7 @@ object ObjectUtils {
         res.add("name", player.name)
         res.add("uuid", player.uniqueId.toString())
         res.add("location", createLocationObject(player.location, runtime))
+        res.add("inventory", createInventoryObject(player.inventory, runtime))
         res.registerJavaMethod({ receiver, parameters ->
             if(parameters.length() > 0) {
                 player.sendMessage(parameters[0] as String)
@@ -44,6 +46,17 @@ object ObjectUtils {
         return res
     }
 
+    fun createInventoryObject(inventory: Inventory, runtime : V8) : V8Object {
+        val res = V8Object(runtime)
+        val contents = V8Object(runtime)
+        for (i in 0 until inventory.contents.size) {
+            contents.add(i.toString(), createItemStackObject(inventory.contents[i], runtime));
+        }
+        res.add("contents", contents)
+        res.add("type", inventory.type.name)
+        return res
+    }
+
     fun createLocationObject(location: Location, runtime: V8): V8Object {
         val res = V8Object(runtime)
         res.add("x", location.x);
@@ -62,7 +75,7 @@ object ObjectUtils {
         // 프젝이 해주겠죠?
         return res;
     }
-
+    
     fun createBlockObject(block: Block, runtime: V8?): V8Object {
         val res = V8Object(runtime)
         // 프젝이 해주겠죠?
