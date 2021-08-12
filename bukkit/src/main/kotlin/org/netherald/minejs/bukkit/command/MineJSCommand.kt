@@ -9,7 +9,7 @@ import org.netherald.minejs.bukkit.impl.PlayerManagerImpl
 import org.netherald.minejs.common.Platform
 import org.netherald.minejs.common.ScriptLoader
 
-class ScriptReload(private val plugin: MineJsBukkit) : CommandExecutor {
+class MineJSCommand(private val plugin: MineJsBukkit) : CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         if (args[0] == "reload") {
             ScriptLoader.unload()
