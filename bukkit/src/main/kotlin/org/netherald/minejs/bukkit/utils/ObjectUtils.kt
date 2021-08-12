@@ -1,7 +1,6 @@
 package org.netherald.minejs.bukkit.utils
 
 import com.eclipsesource.v8.V8
-import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
 import org.bukkit.Location
 import org.bukkit.World
