@@ -19,7 +19,7 @@ import org.netherald.minejs.common.ScriptLoader
 class PlayerListener(val plugin: Plugin) : Listener {
     @EventHandler
     fun playerMove(event: PlayerMoveEvent) {
-        ScriptLoader.invokeEvent("onPlayerMove", ScriptLoader.createV8Object {
+        ScriptLoader.invokeEvent("onPlayerMove") {
             add("from", ObjectUtils.createLocationObject(event.from, runtime))
             add("to", ObjectUtils.createLocationObject(event.to, runtime))
             add("player", ObjectUtils.createPlayerObject(event.player, runtime))
@@ -32,12 +32,12 @@ class PlayerListener(val plugin: Plugin) : Listener {
                     }
                 }
             }, "setCancelled")
-        })
+        }
     }
 
     @EventHandler
     fun playerJoin(event: PlayerJoinEvent) {
-        ScriptLoader.invokeEvent("onPlayerJoin", ScriptLoader.createV8Object {
+        ScriptLoader.invokeEvent("onPlayerJoin") {
             add("player", ObjectUtils.createPlayerObject(event.player, runtime))
             add("joinMessage", MessageUtils.toMiniMessage(event.joinMessage()))
             registerJavaMethod({ receiver, arguments ->
@@ -45,12 +45,12 @@ class PlayerListener(val plugin: Plugin) : Listener {
                     event.joinMessage(MessageUtils.build(arguments[0].toString()))
                 }
             }, "setJoinMessage")
-        })
+        }
     }
 
     @EventHandler
     fun playerQuit(event: PlayerQuitEvent) {
-        ScriptLoader.invokeEvent("onPlayerQuit", ScriptLoader.createV8Object {
+        ScriptLoader.invokeEvent("onPlayerQuit") {
             add("player", ObjectUtils.createPlayerObject(event.player, runtime))
             add("quitMessage", MessageUtils.toMiniMessage(event.quitMessage()))
             registerJavaMethod({ receiver, arguments ->
@@ -58,13 +58,13 @@ class PlayerListener(val plugin: Plugin) : Listener {
                     event.quitMessage(MessageUtils.build(arguments[0].toString()))
                 }
             }, "setQuitMessage")
-        })
+        }
     }
 
     @EventHandler
     fun asyncChat(event: AsyncChatEvent) {
         Bukkit.getScheduler().runTask(plugin, Runnable {
-            ScriptLoader.invokeEvent("onPlayerChat", ScriptLoader.createV8Object {
+            ScriptLoader.invokeEvent("onPlayerChat") {
                 add("player", ObjectUtils.createPlayerObject(event.player, runtime))
                 add("message", MessageUtils.toMiniMessage(event.message()))
                 registerJavaMethod({ receiver, arguments ->
@@ -72,13 +72,13 @@ class PlayerListener(val plugin: Plugin) : Listener {
                         event.message(MessageUtils.build(arguments[0] as String))
                     }
                 }, "setMessage")
-            })
+            }
         })
     }
 
     @EventHandler
     fun playerInteract(event: PlayerInteractEvent) {
-        ScriptLoader.invokeEvent("onPlayerInteract", ScriptLoader.createV8Object {
+        ScriptLoader.invokeEvent("onPlayerInteract") {
             add("player", ObjectUtils.createPlayerObject(event.player, runtime))
             add("action", event.action.name)
             if (event.clickedBlock != null) add("clickedBlock", ObjectUtils.createBlockObject(event.clickedBlock!!, runtime))
@@ -92,6 +92,6 @@ class PlayerListener(val plugin: Plugin) : Listener {
                     }
                 }
             }, "setCancelled")
-        })
+        }
     }
 }

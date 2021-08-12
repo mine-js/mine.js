@@ -8,13 +8,17 @@ object ScriptLoader {
 
     val runtimes = HashMap<File, V8>()
 
+    @Deprecated("Non used method!", ReplaceWith("invokeEvent", "org.netherald.minejs.common.ScriptLoader"))
     fun createV8Object(callback: V8Object.() -> Unit) : V8Object {
+        /*
         for (runtime in runtimes) {
             val baked = V8Object(runtime.value)
             baked.run(callback)
             return baked
         }
-        throw UnsupportedOperationException("unknown error!")
+
+         */
+        throw UnsupportedOperationException("Unused function!")
     }
 
     /*
@@ -29,10 +33,12 @@ object ScriptLoader {
     }
      */
 
-    fun invokeEvent(name: String, v8Object: V8Object) {
+    fun invokeEvent(name: String, v8Object: V8Object.() -> Unit) {
         for (runtime in runtimes) {
             try {
-                runtime.value.executeVoidFunction(name, V8Array(runtime.value).push(v8Object))
+                val obj = V8Object(runtime.value)
+                obj.run(v8Object)
+                runtime.value.executeVoidFunction(name, V8Array(runtime.value).push(obj))
             } catch(e: V8ScriptExecutionException) {
                 if(!e.jsMessage.startsWith("TypeError: undefined")) {
                     e.printStackTrace()
