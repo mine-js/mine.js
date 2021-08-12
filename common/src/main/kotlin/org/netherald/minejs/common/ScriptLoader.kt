@@ -7,6 +7,9 @@ import java.lang.UnsupportedOperationException
 object ScriptLoader {
 
     val runtimes = HashMap<File, V8>()
+    val commands = ArrayList<Command>()
+
+    private var commandManager: CommandManager? = null
 
     @Deprecated("Non used method!", ReplaceWith("invokeEvent", "org.netherald.minejs.common.ScriptLoader"))
     fun createV8Object(callback: V8Object.() -> Unit) : V8Object {
@@ -47,7 +50,7 @@ object ScriptLoader {
         }
     }
 
-    fun load(scriptDirectory: File, platform: Platform, playerManager: PlayerManager, itemManager: ItemManager, console: Console) {
+    fun load(scriptDirectory: File, platform: Platform, playerManager: PlayerManager, itemManager: ItemManager, console: Console, commandManager: CommandManager) {
         if(scriptDirectory.isDirectory) {
             for (file in scriptDirectory.listFiles()) {
                 if(file.name.endsWith(".js")) {
@@ -85,13 +88,33 @@ object ScriptLoader {
                         else
                             return@JavaCallback null
                     },"itemOf")
+                    runtime.registerJavaMethod({ receiver, parameters ->
+                        // createCommand("test", ["alias1", "alias2"], (ctx) => { // ... })
+                        if (parameters.length() > 2) {
+                            console.log("Callback - ${parameters[2].javaClass.name}", "core")
+                            val aliases = ArrayList<String>()
+                            val aliasesRaw = (parameters[1] as V8Array)
+                            for(i in 0 until aliasesRaw.length()) {
+                                aliases.add(aliasesRaw.getString(i))
+                            }
+                            commands.add(Command(parameters[0] as String, aliases, parameters[2] as V8Function, runtime))
+                        }
+                    },"createCommand")
+
                     runtime.executeVoidFunction("onInit", V8Array(runtime))
+
+                    this.commandManager = commandManager
+
+                    commandManager.registerCommands(commands)
                 }
             }
         }
     }
 
     fun unload() {
+        commandManager!!.unloadCommands()
+        commandManager = null
+        commands.clear()
         for (runtime in runtimes) {
             //runtime.value.release()
             runtimes.remove(runtime.key)
