@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.netherald.minejs.bukkit.MineJsBukkit
 import org.netherald.minejs.bukkit.impl.ConsoleImpl
+import org.netherald.minejs.bukkit.impl.ItemManagerImpl
 import org.netherald.minejs.bukkit.impl.PlayerManagerImpl
 import org.netherald.minejs.common.Platform
 import org.netherald.minejs.common.ScriptLoader
@@ -18,10 +19,10 @@ class MineJSCommand(private val plugin: MineJsBukkit) : CommandExecutor {
             return true
         }
         if (args[0] == "reload") {
-            sender.sendMessage(Component.text("${ChatColor.RED}Loading scripts..."))
+            sender.sendMessage(Component.text("${ChatColor.RED}Reloading scripts..."))
             ScriptLoader.unload()
-            ScriptLoader.load(plugin.scriptsDir, Platform.BUKKIT, PlayerManagerImpl(), ConsoleImpl(plugin))
-            sender.sendMessage(Component.text("${ChatColor.GREEN}Complete loading scripts"))
+            ScriptLoader.load(plugin.scriptsDir, Platform.BUKKIT, PlayerManagerImpl(),ItemManagerImpl() ,ConsoleImpl(plugin))
+            sender.sendMessage(Component.text("${ChatColor.GREEN}Complete reloading scripts"))
 
             return true
         }
