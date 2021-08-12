@@ -4,7 +4,7 @@ import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
 import org.bukkit.Bukkit
-import org.netherald.minejs.bukkit.utils.ObjectUtils.Companion.createPlayerObject
+import org.netherald.minejs.bukkit.utils.ObjectUtils.createPlayerObject
 import org.netherald.minejs.common.PlayerManager
 import java.lang.UnsupportedOperationException
 
