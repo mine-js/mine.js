@@ -75,7 +75,7 @@ object ObjectUtils {
         // 프젝이 해주겠죠?
         return res;
     }
-
+    
     fun createBlockObject(block: Block, runtime: V8?): V8Object {
         val res = V8Object(runtime)
         // 프젝이 해주겠죠?
