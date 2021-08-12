@@ -8,3 +8,9 @@ authors:
   - Myoung2
   - NamuTree0345
   - Project_TL
+commands:
+  minejs:
+    description: MineJS command
+    aliases:
+      - js
+    usage: /<command> reload
