@@ -1,16 +1,116 @@
 package org.netherald.minejs.common
 
 import com.eclipsesource.v8.*
-import com.eclipsesource.v8.utils.V8ObjectUtils
-import org.reflections.ReflectionUtils
+import org.reflections.util.Utils
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 object JavaAccsessor {
 
     val objects = HashMap<String, Any>()
     val staticObjects = HashMap<String, Any>()
+
+    fun javaObjFromObjId(id: String, static: Boolean) : Any? {
+        if(static)
+            return staticObjects[id]
+        return objects[id]
+    }
+
+    fun javaObjToV8(obj: Any, static: Boolean, runtime: V8) : V8Object? {
+        val generatedKey = UUID.randomUUID().toString()
+        val tmp = V8Object(runtime)
+        lateinit var tmp2: V8Object
+        tmp.run {
+            if(static)
+                add("___minejs_static_flag___", true)
+            if(!static) objects[generatedKey] = obj else staticObjects[generatedKey] = obj
+            add("___minejs_javaType___", "${obj::class.java.`package`.name}.${obj::class.java.name}")
+            add("___minejs_objId___", generatedKey)
+            //val fields = if(!static) ReflectionUtils.getAllFields(obj::class.java, { s -> s.canAccess(obj) }) else ReflectionUtils.getAllFields(obj::class.java, { s -> s.canAccess(null) })
+            //val methods = if(!static) ReflectionUtils.getAllMethods(obj::class.java, { s -> s.canAccess(obj) }) else ReflectionUtils.getAllMethods(obj::class.java, { s -> s.canAccess(null) })
+            val methods = Utils.filter(
+                Utils.filter(
+                    obj::class.java.declaredMethods,
+                    if(static) { s -> Modifier.isStatic(s.modifiers) && s.canAccess(null) } else { s -> !Modifier.isStatic(s.modifiers) && s.canAccess(obj) }
+                ))
+
+            val fields = Utils.filter(
+                Utils.filter(
+                    obj::class.java.fields,
+                    if(static) { s -> s.name != "serialVersionUID" && Modifier.isStatic(s.modifiers) && s.canAccess(null) } else { s -> s.name != "serialVersionUID" && s.canAccess(obj) }
+                ))
+            for (field in fields) {
+                if(field.type.name == "Boolean") {
+                    add(field.name, if(!static) field.getBoolean(obj) else field.getBoolean(null))
+                } else if(field.type.name == "Integer") {
+                    add(field.name, if(!static) field.getInt(obj) else field.getInt(null))
+                } else if(field.type.name == "String") {
+                    add(field.name, if(!static) field.get(obj) as String else field.get(null) as String)
+                } else if(field.type.name == "Double") {
+                    add(field.name, if(!static) field.getDouble(obj) else field.getDouble(null))
+                } else {
+                    add(field.name, javaObjToV8(obj, static, runtime))
+                }
+            }
+            tmp2 = V8Object(runtime)
+            tmp2.add("tmp", this)
+            var before: String? = null
+            var beforeCount = 1
+            for (method in methods) {
+                var name = method.name + beforeCount
+                if(method.name == before) {
+                    beforeCount++
+                    name = method.name + beforeCount
+                } else {
+                    before = method.name
+                    beforeCount = 1
+                }
+                println("Name: " + name)
+                registerJavaMethod(JavaCallback { receiver, parameters ->
+                    val madeParamTypes = ArrayList<Class<*>>()
+                    val madeParamValues = ArrayList<Any>()
+                    for(i in 0 until parameters.length()) {
+                        val param = parameters[i]
+                        val jParam = method.parameters[i]
+                        if(jParam.type.cast(param) != null) {
+                            madeParamTypes.add(param::class.java)
+                            madeParamValues.add(param)
+                        } else if(param is V8Object) {
+                            if(param.contains("___minejs_objId___")) {
+                                val j = javaObjFromObjId(param.getString("___minejs_objId___"), static)
+                                if(j != null) {
+                                    madeParamTypes.add(j::class.java)
+                                    madeParamValues.add(j)
+                                }
+                            }
+                        }
+                    }
+
+                    println("madeParamValues: ${madeParamValues.size}")
+                    println("method: " + method.parameters.size)
+
+                    val returnValue = if(static) method.invoke(null, *madeParamValues.toTypedArray()) else method.invoke(obj, *madeParamValues.toTypedArray())
+
+                    if(returnValue is Boolean) {
+                        return@JavaCallback returnValue
+                    } else if(returnValue is Int) {
+                        return@JavaCallback returnValue
+                    } else if(returnValue is String) {
+                        return@JavaCallback returnValue
+                    } else if(returnValue is Boolean) {
+                        return@JavaCallback returnValue
+                    } else if(returnValue !is Unit && returnValue != null) {
+                        return@JavaCallback returnValue
+                    } else {
+                        return@JavaCallback null
+                    }
+
+                }, name)
+            }
+        }
+        return tmp2.getObject("tmp")
+    }
 
     fun run(runtime: V8, className: String) : V8Object {
         val res = V8Object(runtime)
@@ -19,9 +119,6 @@ object JavaAccsessor {
             val objId = UUID.randomUUID()
             add("___minejs_javaType___", className)
             registerJavaMethod(JavaCallback { receiver, parameters ->
-                val objInstance = V8Object(runtime)
-                lateinit var tmp: V8Object
-                objInstance.run {
                     val types = ArrayList<Class<*>>()
                     val values = ArrayList<Any>()
 
@@ -37,109 +134,16 @@ object JavaAccsessor {
                                     values.add(objects[parameter.getString("___minejs_objId___")]!!)
                                 } else {
                                     types.add(Class.forName(parameter.getString("___minejs_javaType___")))
-                                    values.add(staticObjects[parameter.getString("___minejs_static_objId___")]!!)
+                                    values.add(staticObjects[parameter.getString("___minejs_objId___")]!!)
                                 }
                             }
                         }
                     }
-
-                    tmp = V8Object(runtime)
-                    tmp.add("bak", objInstance)
 
                     val searchedConstructors = classReflect.getDeclaredConstructor(*types.toTypedArray())
 
                     val instance = searchedConstructors.newInstance(*values.toTypedArray())
-                    for (field in classReflect.fields) {
-                        if (field.canAccess(instance)) {
-                            if (field.type.name.equals("Boolean")) {
-                                add(field.name, field.get(instance) as Boolean)
-                            } else if (field.type.name.equals("Integer", true)) {
-                                add(field.name, field.get(instance) as Int)
-                            } else if (field.type.name.equals("String", true)) {
-                                add(field.name, field.get(instance) as String)
-                            } else if (field.type.name.equals("Double", true)) {
-                                add(field.name, field.get(instance) as Double)
-                            }
-                        }
-                    }
-                    for (methodRaw in classReflect.methods) {
-                        if (methodRaw.canAccess(instance)) {
-                            /*
-                            val bakedTypes = method.parameterTypes
-                            for (i in 0 until bakedTypes.size) {
-                                val bakedType = bakedTypes[i]
-                                if(!bakedType.name.equals("Boolean", true) || !bakedType.name.equals("Integer", true) || !bakedType.name.equals("String", true) || !bakedType.name.equals("Double", true)) {
-                                    bakedTypes[i] = V8Object::class.java
-                                }
-                            }
-                             */
-                            registerJavaMethod(JavaCallback { receiver, parameters ->
-                                    val baked = arrayListOf<Any>()
-                                    val bakedTypes = arrayListOf<Class<*>>()
-                                    for(i in 0 until parameters.length()) {
-                                        val parameter = parameters[i]
-                                        if(parameter !is V8Object) {
-                                            bakedTypes.add(parameter.javaClass)
-                                            baked.add(parameter)
-                                        } else {
-                                            if(parameter.contains("___minejs_javaType___") && parameter.contains("___minejs_objId___")) {
-                                                if(!parameter.contains("__minejs_static_flag___")) {
-                                                    bakedTypes.add(Class.forName(parameter.getString("___minejs_javaType___")))
-                                                    baked.add(objects[parameter.getString("___minejs_objId___")]!!)
-                                                } else {
-                                                    bakedTypes.add(Class.forName(parameter.getString("___minejs_javaType___")))
-                                                    baked.add(staticObjects[parameter.getString("___minejs_static_objId___")]!!)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    /*
-                                    for (i in 0 until parameters.length()) {
-                                        val type = method.parameterTypes[i]
-                                        println(type.name)
-                                        if(!type.name.equals("Boolean", true) || !type.name.equals("Integer", true) || !type.name.equals("String", true) || !type.name.equals("Double", true)) {
-                                            if(parameters[i] is V8Object) {
-                                                val parameter = parameters[i] as V8Object
-                                                if (parameter.contains("___minejs_javaType___") && parameter.contains("___minejs_objId___")) {
-                                                    if (!parameter.contains("__minejs_static_flag___")) {
-                                                        baked.add(objects[parameter.getString("___minejs_objId___")]!!)
-                                                    } else {
-                                                        baked.add(staticObjects[parameter.getString("___minejs_static_objId___")]!!)
-                                                    }
-                                                }
-                                            }
-                                        } else {
-                                            println(parameters[i])
-                                            baked.add(parameters[i])
-                                        }
-                                    }
-
-                                     */
-                                    val methodFound = ReflectionUtils.getAllMethods(classReflect,
-                                        ReflectionUtils.withParameters(*bakedTypes.toTypedArray()),
-                                        ReflectionUtils.withName(methodRaw.name))
-                                println("NAME: ${methodRaw.name}")
-                                for (bakedType in bakedTypes) {
-                                    println("BTA: ${bakedType.name}")
-                                }
-                                    if(!methodFound.isNullOrEmpty()) {
-                                        val method = methodFound.first()
-                                        val returnRes = method.invoke(instance, *baked.toTypedArray())
-                                        for (any in baked.toTypedArray()) {
-                                            print(any)
-                                        }
-                                        println()
-                                        println(method.name)
-                                        println(returnRes)
-                                        return@JavaCallback returnRes
-                                    }
-                                return@JavaCallback null
-                            }, methodRaw.name)
-                        }
-                    }
-                    objects[objId.toString()] = instance
-                }
-                return@JavaCallback tmp.getObject("bak")
+                return@JavaCallback javaObjToV8(instance, false, runtime)!!
             }, "new")
             add("___minejs_objId___", objId.toString())
         }
