@@ -6,6 +6,7 @@ Script folder is `plugins/js`!
 ## How to build?
 Run build task of Bukkit or Bungee Submodule!
 ## How to use?
+[Wiki](http://netherald.org:3000)
 ### Example code
 ```js
 let a = 'yep'
