@@ -27,7 +27,7 @@ MineJsBukkit : JavaPlugin() {
         logger.info("Loading scripts...")
         if(!scriptsDir.exists())
             scriptsDir.mkdir()
-        ScriptLoader.load(scriptsDir, Platform.BUKKIT, PlayerManagerImpl(), ItemManagerImpl(), ConsoleImpl(this), CommandManagerImpl(this))
+        ScriptLoader.load(scriptsDir, File(scriptsDir, "storage.json"), Platform.BUKKIT, PlayerManagerImpl(), ItemManagerImpl(), ConsoleImpl(this), CommandManagerImpl(this))
     }
 
 }
