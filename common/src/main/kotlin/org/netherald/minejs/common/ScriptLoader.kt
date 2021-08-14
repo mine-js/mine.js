@@ -94,6 +94,15 @@ object ScriptLoader {
                         else
                             return@JavaCallback null
                     },"itemOf")
+                    runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
+                        if (parameters.length() > 0)
+                            return@JavaCallback V8Object(runtime).run {
+                                add("___minejs_long_flag___", true)
+                                add("value", parameters[0] as Int)
+                            }
+                        else
+                            return@JavaCallback null
+                    }, "jlong")
                     runtime.registerJavaMethod({ receiver, parameters ->
                         // createCommand("test", ["alias1", "alias2"], (ctx) => { // ... })
                         if (parameters.length() > 2) {
