@@ -1,15 +1,10 @@
 function onInit() {
     console.log('creating commands...')
     createCommand('test', ['t', 't2'], (ctx) => {
+        //const random = jclass('java.util.Random').new(jlong(1))
+        //console.log(`test: ${random.nextInt1(100)}`)
+        console.log(`test: ${jclass('org.netherald.minejs.common.java.TestClass').staticGreeting1('Hello, Static World!')}`)
         console.log(ctx)
     })
     console.log('Hello World2!')
-}
-
-function onPlayerMove(event) {
-    //console.log(`FromX: ${event.from.x}, FromY: ${event.from.x}, FromX: ${event.from.x}`)
-    //console.log(`Player: ${event.player.name}`)
-    //console.log(playerOf("netherald"))
-    console.log(`Platform: ${getPlatform()}`)
-    event.setCancelled(true)
 }
