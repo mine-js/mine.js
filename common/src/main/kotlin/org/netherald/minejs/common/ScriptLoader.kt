@@ -50,7 +50,9 @@ object ScriptLoader {
         }
     }
 
-    fun load(scriptDirectory: File, platform: Platform, playerManager: PlayerManager, itemManager: ItemManager, console: Console, commandManager: CommandManager) {
+    var alreadyLoadStorage = false
+
+    fun load(scriptDirectory: File, storageFile: File, platform: Platform, playerManager: PlayerManager, itemManager: ItemManager, console: Console, commandManager: CommandManager) {
         if(scriptDirectory.isDirectory) {
             for (file in scriptDirectory.listFiles()) {
                 if(file.name.endsWith(".js")) {
@@ -65,8 +67,35 @@ object ScriptLoader {
                     runtime.executeVoidScript(file.readText())
 
                     val consoleObject = V8Object(runtime)
+                    val storageObject = V8Object(runtime)
 
                     runtime.add("console", consoleObject)
+                    runtime.add("storage", consoleObject)
+
+                    storageObject.registerJavaMethod(JavaCallback { receiver, parameters ->
+                        if(parameters.length() > 0) {
+                            if(!alreadyLoadStorage) {
+                                alreadyLoadStorage = true
+                                Storage.read(storageFile)
+                            }
+                            val returnValue = Storage.get(parameters[0] as String)
+                            if (returnValue is Boolean) {
+                                return@JavaCallback returnValue
+                            } else if (returnValue is Int) {
+                                return@JavaCallback returnValue
+                            } else if (returnValue is String) {
+                                return@JavaCallback returnValue
+                            }
+                        }
+                        return@JavaCallback null
+                    }, "get")
+                    storageObject.registerJavaMethod(JavaCallback { receiver, parameters ->
+                        if(parameters.length() > 1) {
+                            Storage.set(parameters[0] as String, parameters[1])
+                            Storage.save(storageFile)
+                        }
+                        return@JavaCallback null
+                    }, "set")
 
                     runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
                         return@JavaCallback platform.name
