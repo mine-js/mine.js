@@ -9,6 +9,8 @@ object ScriptLoader {
     val runtimes = HashMap<File, V8>()
     val commands = ArrayList<Command>()
 
+    var libStr = ""
+
     private var commandManager: CommandManager? = null
 
     @Deprecated("Non used method!", ReplaceWith("invokeEvent", "org.netherald.minejs.common.ScriptLoader"))
@@ -54,9 +56,14 @@ object ScriptLoader {
 
     fun load(scriptDirectory: File, storageFile: File, platform: Platform, playerManager: PlayerManager, itemManager: ItemManager, console: Console, commandManager: CommandManager) {
         if(scriptDirectory.isDirectory) {
-            for (file in scriptDirectory.listFiles()) {
-                if(file.name.endsWith(".js")) {
-                    console.log("Loading ${file.name}", "core")
+            val files = scriptDirectory.listFiles()
+            files.sort()
+            for (file in files) {
+                if(file.name.endsWith(".lib.js")) {
+                    console.log("Loading library ${file.name}", "core")
+                    libStr += file.readText() + "\n"
+                } else if(file.name.endsWith(".js")) {
+                    if(file.name.endsWith(".internal.js")) console.log("Loading internal ${file.name}", "core") else console.log("Loading ${file.name}", "core")
                     lateinit var runtime: V8
                     if(runtimes.contains(file))
                         runtime = runtimes[file]!!
@@ -64,7 +71,7 @@ object ScriptLoader {
                         runtime = V8.createV8Runtime()
                         runtimes[file] = runtime
                     }
-                    runtime.executeVoidScript(file.readText())
+                    runtime.executeVoidScript("\"use strict\";\n" + libStr + "\n" + file.readText())
 
                     val consoleObject = V8Object(runtime)
                     val storageObject = V8Object(runtime)
@@ -145,7 +152,13 @@ object ScriptLoader {
                         }
                     },"createCommand")
 
-                    runtime.executeVoidFunction("onInit", V8Array(runtime))
+                    try {
+                        runtime.executeVoidFunction("onInit", V8Array(runtime))
+                    } catch (ex: V8ScriptExecutionException) {
+                        if(ex.jsMessage != "TypeError: undefined is not a function") {
+                            ex.printStackTrace()
+                        }
+                    }
 
                     this.commandManager = commandManager
 
@@ -158,11 +171,16 @@ object ScriptLoader {
     fun unload() {
         commandManager!!.unloadCommands()
         commandManager = null
+        libStr = ""
         commands.clear()
-        for (runtime in runtimes) {
-            //runtime.value.release()
-            runtimes.remove(runtime.key)
-        }
+        runtimes.clear()
+        /*
+        for(itr in runtimes.iterator()) {
+            if (runtimes.iterator().hasNext()) {
+                runtimes.iterator().next().value.release()
+                runtimes.iterator().remove()
+            }
+        }*/
     }
 
 }
