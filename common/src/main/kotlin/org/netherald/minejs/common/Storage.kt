@@ -32,7 +32,7 @@ object Storage {
 
     fun read(file: File) {
         if(!file.exists())
-            file.createNewFile()
+            file.writeText("{}")
         stor.clear()
         val jsonObject = JsonParser.parseString(file.readText()).asJsonObject
         for (entry in jsonObject.entrySet()) {

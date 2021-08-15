@@ -18,7 +18,7 @@ fun main() {
     val scanner = Scanner(System.`in`)
 
     while(!exited) {
-        val read = scanner.next()
+        val read = scanner.nextLine()
         if(read.startsWith("/")) {
             for (item in commands) {
                 val args = read.split(" ").toTypedArray().copyOfRange(1, read.split(" ").size)
@@ -27,7 +27,7 @@ fun main() {
                     argsV8.push(arg)
                 }
                 val commandName = read.split(" ")[0]
-                println("CommandName: $commandName, ItemName: ${item.name}")
+                println("CommandName: $commandName, ItemName: /${item.name}")
                 if("/${item.name}" == commandName || !item.alias.filter { str -> "/$str" == commandName }.isNullOrEmpty()) {
                     val param = V8Object(item.runtime)
                     param.run {
