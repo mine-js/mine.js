@@ -70,7 +70,7 @@ object ScriptLoader {
                     val storageObject = V8Object(runtime)
 
                     runtime.add("console", consoleObject)
-                    runtime.add("storage", consoleObject)
+                    runtime.add("storage", storageObject)
 
                     storageObject.registerJavaMethod(JavaCallback { receiver, parameters ->
                         if(parameters.length() > 0) {
