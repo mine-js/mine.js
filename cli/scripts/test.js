@@ -1,10 +1,27 @@
+'use strict';
+
 function onInit() {
-    console.log('creating commands...')
-    createCommand('test', ['t', 't2'], (ctx) => {
-        //const random = jclass('java.util.Random').new(jlong(1))
-        //console.log(`test: ${random.nextInt1(100)}`)
-        console.log(`test: ${jclass('org.netherald.minejs.common.java.TestClass').staticGreeting1('Hello, Static World!')}`)
-        console.log(ctx)
+    let stor = storage.get('hello')
+    if(stor === null) {
+        storage.set('hello', 1)
+        stor = 1
+    }
+
+    createCommand('change', ['c'], (ctx) => {
+        if(ctx.args.length > 0) {
+            const i = parseInt(ctx.args[0])
+            if(!isNaN(i)) {
+                const before = storage.get('hello')
+                storage.set('hello', i)
+                ctx.sender.send(`Hello changed to ${before} to ${i}`)
+            }
+        } else {
+            ctx.sender.send('nonex')
+        }
     })
-    console.log('Hello World2!')
+
+    createCommand('get', ['g'], (ctx) => {
+        ctx.sender.send(`Hello is ${storage.get('hello')}`)
+    })
+    console.log(stor)
 }

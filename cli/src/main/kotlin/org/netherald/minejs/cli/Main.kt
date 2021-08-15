@@ -13,12 +13,12 @@ lateinit var commands: ArrayList<Command>
 
 fun main() {
     println("Loading scripts(${File(System.getProperty("user.dir") + File.separator + "scripts").absolutePath})...")
-    ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(),ItemManagerImpl() ,ConsoleImpl(), CommandManagerImpl())
+    ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), File(System.getProperty("user.dir") + File.separator + "scripts${File.separator}storage.json"), Platform.CLI, PlayerManagerImpl(),ItemManagerImpl() ,ConsoleImpl(), CommandManagerImpl())
     var exited = false
     val scanner = Scanner(System.`in`)
 
     while(!exited) {
-        val read = scanner.next()
+        val read = scanner.nextLine()
         if(read.startsWith("/")) {
             for (item in commands) {
                 val args = read.split(" ").toTypedArray().copyOfRange(1, read.split(" ").size)
@@ -27,7 +27,7 @@ fun main() {
                     argsV8.push(arg)
                 }
                 val commandName = read.split(" ")[0]
-                println("CommandName: $commandName, ItemName: ${item.name}")
+                println("CommandName: $commandName, ItemName: /${item.name}")
                 if("/${item.name}" == commandName || !item.alias.filter { str -> "/$str" == commandName }.isNullOrEmpty()) {
                     val param = V8Object(item.runtime)
                     param.run {
@@ -64,7 +64,7 @@ fun main() {
             }
         } else if(read.startsWith("reload")) {
             ScriptLoader.unload()
-            ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), Platform.CLI, PlayerManagerImpl(),ItemManagerImpl(),ConsoleImpl(), CommandManagerImpl())
+            ScriptLoader.load(File(System.getProperty("user.dir") + File.separator + "scripts"), File(System.getProperty("user.dir") + File.separator + "scripts${File.separator}storage.json"), Platform.CLI, PlayerManagerImpl(),ItemManagerImpl() ,ConsoleImpl(), CommandManagerImpl())
         } else if(read.startsWith("stop")) {
             ScriptLoader.unload()
             exited = true
