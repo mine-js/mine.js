@@ -169,8 +169,8 @@ object ScriptLoader {
     }
 
     fun unload() {
-        commandManager!!.unloadCommands()
-        commandManager = null
+        commandManager?.unloadCommands()
+        //commandManager = null
         libStr = ""
         commands.clear()
         runtimes.clear()
