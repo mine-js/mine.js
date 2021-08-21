@@ -12,7 +12,7 @@ Run build task of Bukkit or Bungee Submodule!
 let a = 'yep'
 function onInit() {
   a = storage.get('test')
-  command('hello', [], callback)
+  createCommand('hello', [], callback)
   console.log('ok init succ')
 }
 
@@ -23,8 +23,10 @@ function onPlayerMove(event) {
   }
 }
 
-function callback(ctx) {
-  ctx.sender.send('hello')
-  ctx.sender.teleport(location.create('world', 1, 2, 3))
+function callback(args, sender) {
+  sender.send('hello')
+  if(sender.type === 'type') {
+    sender.getPlayer().teleport(location.create('world', 1, 2, 3))
+  }
 }
 ```
