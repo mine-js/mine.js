@@ -6,12 +6,15 @@ import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
+import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.minejs.bukkit.MineJsBukkit
+import org.netherald.minejs.bukkit.impl.CommandManagerImpl
 import org.netherald.minejs.bukkit.impl.ConsoleImpl
 import org.netherald.minejs.bukkit.impl.ItemManagerImpl
 import org.netherald.minejs.bukkit.impl.PlayerManagerImpl
 import org.netherald.minejs.common.Platform
 import org.netherald.minejs.common.ScriptLoader
+import java.io.File
 
 class MineJSCommand(private val plugin: MineJsBukkit) : CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
@@ -22,7 +25,7 @@ class MineJSCommand(private val plugin: MineJsBukkit) : CommandExecutor {
         if (args[0] == "reload") {
             sender.sendMessage(Component.text("Loading scripts...", NamedTextColor.YELLOW))
             ScriptLoader.unload()
-            ScriptLoader.load(plugin.scriptsDir, Platform.BUKKIT, PlayerManagerImpl(), ItemManagerImpl(), ConsoleImpl(plugin))
+            JavaPlugin.getPlugin(MineJsBukkit::class.java).load()
             sender.sendMessage(Component.text("Complete loading scripts", NamedTextColor.GREEN))
 
             return true
