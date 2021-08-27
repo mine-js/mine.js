@@ -27,7 +27,7 @@ class PlayerListener(val plugin: Plugin) : Listener {
                 if (arguments.length() > 0) {
                     if (arguments[0] == true) {
                         event.isCancelled = true;
-                    } else if (arguments[0] == true) {
+                    } else if (arguments[0] == false) {
                         event.isCancelled = false;
                     }
                 }
@@ -87,7 +87,7 @@ class PlayerListener(val plugin: Plugin) : Listener {
                 if (arguments.length() > 0) {
                     if (arguments[0] == true) {
                         event.isCancelled = true;
-                    } else if (arguments[0] == true) {
+                    } else if (arguments[0] == false) {
                         event.isCancelled = false;
                     }
                 }
