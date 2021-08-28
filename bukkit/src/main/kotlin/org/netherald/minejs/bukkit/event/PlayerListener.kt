@@ -1,5 +1,6 @@
 package org.netherald.minejs.bukkit.event
 
+import com.eclipsesource.v8.V8Object
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
@@ -20,9 +21,9 @@ class PlayerListener(val plugin: Plugin) : Listener {
     @EventHandler
     fun playerMove(event: PlayerMoveEvent) {
         ScriptLoader.invokeEvent("onPlayerMove") {
-            add("from", ObjectUtils.createLocationObject(event.from, runtime))
-            add("to", ObjectUtils.createLocationObject(event.to, runtime))
-            add("player", ObjectUtils.createPlayerObject(event.player, runtime))
+            add("from", V8Object(runtime).apply(ObjectUtils.createLocationObject(event.from, runtime)))
+            add("to", V8Object(runtime).apply(ObjectUtils.createLocationObject(event.to, runtime)))
+            add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(event.player, runtime)))
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
                     if (arguments[0] == true) {
@@ -32,13 +33,16 @@ class PlayerListener(val plugin: Plugin) : Listener {
                     }
                 }
             }, "setCancelled")
+            registerJavaMethod({ receiver, arguments ->
+                event.isCancelled = true
+            }, "cancel")
         }
     }
 
     @EventHandler
     fun playerJoin(event: PlayerJoinEvent) {
         ScriptLoader.invokeEvent("onPlayerJoin") {
-            add("player", ObjectUtils.createPlayerObject(event.player, runtime))
+            add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(event.player, runtime)))
             add("joinMessage", MessageUtils.toMiniMessage(event.joinMessage()))
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
@@ -51,7 +55,7 @@ class PlayerListener(val plugin: Plugin) : Listener {
     @EventHandler
     fun playerQuit(event: PlayerQuitEvent) {
         ScriptLoader.invokeEvent("onPlayerQuit") {
-            add("player", ObjectUtils.createPlayerObject(event.player, runtime))
+            add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(event.player, runtime)))
             add("quitMessage", MessageUtils.toMiniMessage(event.quitMessage()))
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
@@ -65,13 +69,16 @@ class PlayerListener(val plugin: Plugin) : Listener {
     fun asyncChat(event: AsyncChatEvent) {
         Bukkit.getScheduler().runTask(plugin, Runnable {
             ScriptLoader.invokeEvent("onPlayerChat") {
-                add("player", ObjectUtils.createPlayerObject(event.player, runtime))
+                add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(event.player, runtime)))
                 add("message", MessageUtils.toMiniMessage(event.message()))
                 registerJavaMethod({ receiver, arguments ->
                     if (arguments.length() > 0) {
                         event.message(MessageUtils.build(arguments[0] as String))
                     }
                 }, "setMessage")
+                registerJavaMethod({ receiver, arguments ->
+                    event.isCancelled = true
+                }, "cancel")
             }
         })
     }
@@ -79,9 +86,9 @@ class PlayerListener(val plugin: Plugin) : Listener {
     @EventHandler
     fun playerInteract(event: PlayerInteractEvent) {
         ScriptLoader.invokeEvent("onPlayerInteract") {
-            add("player", ObjectUtils.createPlayerObject(event.player, runtime))
+            add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(event.player, runtime)))
             add("action", event.action.name)
-            if (event.clickedBlock != null) add("clickedBlock", ObjectUtils.createBlockObject(event.clickedBlock!!, runtime))
+            if (event.clickedBlock != null) add("clickedBlock", V8Object(runtime).apply(ObjectUtils.createBlockObject(event.clickedBlock!!, runtime)))
             else addUndefined("clickedBlock")
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
@@ -92,6 +99,19 @@ class PlayerListener(val plugin: Plugin) : Listener {
                     }
                 }
             }, "setCancelled")
+            registerJavaMethod({ receiver, arguments ->
+                event.isCancelled = true
+            }, "cancel")
+        }
+        ScriptLoader.invokeEvent("onClick") {
+            add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(event.player, runtime)))
+            add("clickSide", if(event.action.toString().contains("RIGHT")) "right" else "left")
+            add("isAir", event.action.toString().contains("AIR"))
+            if (event.clickedBlock != null) add("clicked", V8Object(runtime).apply(ObjectUtils.createBlockObject(event.clickedBlock!!, runtime)))
+            else addUndefined("clicked")
+            registerJavaMethod({ receiver, arguments ->
+                event.isCancelled = true
+            }, "cancel")
         }
     }
 }

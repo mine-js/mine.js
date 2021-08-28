@@ -13,7 +13,7 @@ class PlayerManagerImpl : PlayerManager {
     override fun getPlayers(runtime: V8): V8Array {
         val array = V8Array(runtime)
         for (player in Bukkit.getOnlinePlayers()) {
-            val playerArray = createPlayerObject(player, runtime)
+            val playerArray = V8Object(runtime).apply(createPlayerObject(player, runtime))
             array.push(playerArray)
             playerArray.release()
         }
@@ -27,7 +27,7 @@ class PlayerManagerImpl : PlayerManager {
 
     override fun playerOf(runtime: V8, name: String): V8Object {
         val player = Bukkit.getPlayer(name)
-        return if (player != null) createPlayerObject(player, runtime)
+        return if (player != null) V8Object(runtime).apply(createPlayerObject(player, runtime))
             else V8Object(runtime)
     }
 }

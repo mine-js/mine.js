@@ -11,6 +11,6 @@ class ItemManagerImpl : ItemManager {
 
     override fun itemOf(runtime: V8, name: String): V8Object {
         val material = Material.getMaterial(name) ?: return V8Object(runtime)
-        return createItemStackObject(ItemStack(material),runtime)
+        return V8Object(runtime).apply(createItemStackObject(ItemStack(material),runtime))
     }
 }
