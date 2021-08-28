@@ -142,6 +142,9 @@ object ObjectUtils {
                 return@JavaCallback location.pitch.toDouble()
             }, "pitch")
             registerJavaMethod(JavaCallback { receiver, parameters ->
+                return@JavaCallback V8Object(runtime).apply { createBlockObject(location.block, runtime) }
+            }, "block")
+            registerJavaMethod(JavaCallback { receiver, parameters ->
                 if(parameters.length() > 0) {
                     location.yaw = (parameters[0] as Double).toFloat()
                 }
