@@ -39,8 +39,10 @@ object ObjectUtils {
 
     fun createPlayerObject(player: Player, runtime: V8, fromEntity: Boolean = false): V8Object.() -> Unit {
         return {
+            /*
             if(!fromEntity)
                 apply(createEntityObject(player, runtime))
+             */
             add("name", player.name)
             registerJavaMethod({ receiver, parameters ->
                 if (parameters.length() > 0) {
@@ -162,10 +164,10 @@ object ObjectUtils {
                 }
             }, "send")
             registerJavaMethod(JavaCallback { receiver, parameters ->
-                return@JavaCallback createBlockObject((commandSender as BlockCommandSender).block, runtime)
+                return@JavaCallback V8Object(runtime).apply(createBlockObject((commandSender as BlockCommandSender).block, runtime))
             }, "block")
             registerJavaMethod(JavaCallback { receiver, parameters ->
-                return@JavaCallback createPlayerObject(commandSender as Player, runtime)
+                return@JavaCallback V8Object(runtime).apply(createPlayerObject(commandSender as Player, runtime))
             }, "player")
             add("type", if(commandSender is ConsoleCommandSender) "console" else if(commandSender is BlockCommandSender) "block" else if(commandSender is Player) "player" else "unknown")
         }

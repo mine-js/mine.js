@@ -34,7 +34,7 @@ object Storage {
         if(!file.exists())
             file.writeText("{}")
         stor.clear()
-        val jsonObject = JsonParser.parseString(file.readText()).asJsonObject
+        val jsonObject = JsonParser().parse(file.readText()).asJsonObject
         for (entry in jsonObject.entrySet()) {
             val je = entry.value
             val jp = entry.value.asJsonPrimitive
