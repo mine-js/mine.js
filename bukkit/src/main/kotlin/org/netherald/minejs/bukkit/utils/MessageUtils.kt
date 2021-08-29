@@ -25,11 +25,6 @@ object MessageUtils {
 
     fun build(str: String) : Component = miniMessage.parse(str)
 
-    fun toMiniMessage(comp: Component?) : String? {
-        if(comp != null)
-            return miniMessage.serialize(comp)
-        else
-            return null
-    }
+    fun toMiniMessage(comp: Component) : String = miniMessage.serialize(comp)
 
 }

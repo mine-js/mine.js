@@ -43,7 +43,7 @@ class PlayerListener(val plugin: Plugin) : Listener {
     fun playerJoin(event: PlayerJoinEvent) {
         ScriptLoader.invokeEvent("onPlayerJoin") {
             add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(event.player, runtime)))
-            add("joinMessage", MessageUtils.toMiniMessage(event.joinMessage()))
+            add("joinMessage", MessageUtils.toMiniMessage(event.joinMessage()!!))
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
                     event.joinMessage(MessageUtils.build(arguments[0].toString()))
@@ -56,7 +56,7 @@ class PlayerListener(val plugin: Plugin) : Listener {
     fun playerQuit(event: PlayerQuitEvent) {
         ScriptLoader.invokeEvent("onPlayerQuit") {
             add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(event.player, runtime)))
-            add("quitMessage", MessageUtils.toMiniMessage(event.quitMessage()))
+            add("quitMessage", MessageUtils.toMiniMessage(event.quitMessage()!!))
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
                     event.quitMessage(MessageUtils.build(arguments[0].toString()))

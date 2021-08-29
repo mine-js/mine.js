@@ -54,7 +54,7 @@ object ScriptLoader {
 
     var alreadyLoadStorage = false
 
-    fun load(scriptDirectory: File, storageFile: File, platform: Platform, playerManager: PlayerManager, itemManager: ItemManager, console: Console, commandManager: CommandManager) {
+    fun load(scriptDirectory: File, storageFile: File, platform: Platform, playerManager: PlayerManager, itemManager: ItemManager, console: Console, commandManager: CommandManager, timeout: Timeout) {
         if(scriptDirectory.isDirectory) {
             val files = scriptDirectory.listFiles()
             files.sort()
@@ -104,6 +104,23 @@ object ScriptLoader {
                         return@JavaCallback null
                     }, "set")
 
+                    runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
+                        if(parameters.length() > 1) {
+                            return@JavaCallback timeout.setTimeout(runtime, parameters[0] as V8Function, parameters[1] as Int)
+                        }
+                        return@JavaCallback null
+                    }, "setTimeout")
+                    runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
+                        if(parameters.length() > 1) {
+                            return@JavaCallback timeout.setInterval(runtime, parameters[0] as V8Function, parameters[1] as Int)
+                        }
+                        return@JavaCallback null
+                    }, "setInterval")
+                    runtime.registerJavaMethod({ receiver, parameters ->
+                        if(parameters.length() > 0) {
+                            timeout.clearInterval(runtime, parameters[0] as Int)
+                        }
+                    }, "clearInterval")
                     runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
                         return@JavaCallback platform.name
                     }, "getPlatform")

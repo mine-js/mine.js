@@ -4,6 +4,9 @@ import com.eclipsesource.v8.JavaCallback
 import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
+import net.kyori.adventure.bossbar.BossBar
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
@@ -17,9 +20,18 @@ import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
+import org.bukkit.scoreboard.DisplaySlot
+import org.bukkit.scoreboard.Scoreboard
+import org.bukkit.scoreboard.ScoreboardManager
 import org.bukkit.util.Vector
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 object ObjectUtils {
+
+    val scoreboards = HashMap<UUID, Scoreboard>()
+    val entries = HashMap<UUID, HashMap<Int, Component>>()
 
     fun createFallingBlockObject(fallingBlock: FallingBlock, runtime: V8, fromEntity: Boolean = false): V8Object.() -> Unit {
         return {
@@ -49,6 +61,108 @@ object ObjectUtils {
                     player.sendMessage(MessageUtils.build(parameters[0] as String))
                 }
             }, "send")
+            registerJavaMethod(JavaCallback { receiver, parameters ->
+                if(parameters.length() > 0) {
+                    var scoreboard = scoreboards[player.uniqueId]
+                    if(scoreboard == null) {
+                        scoreboard = Bukkit.getScoreboardManager().newScoreboard
+                        scoreboards[player.uniqueId] = scoreboard
+                    }
+                    var objective = scoreboard.getObjective(player.uniqueId.toString().split("-")[0])
+                    if(objective == null)
+                        objective = scoreboard.registerNewObjective(player.uniqueId.toString().split("-")[0], "dummy", MessageUtils.build(parameters[0] as String))
+
+                    objective.displaySlot = DisplaySlot.SIDEBAR
+
+                    player.scoreboard = scoreboard
+
+                    fun updateScoreboard(scores: HashMap<Int, Component>) {
+                        if(entries.containsKey(player.uniqueId)) {
+                            for (i in entries[player.uniqueId]!!) {
+                                if(scores[i.key] != i.value)
+                                    scores[i.key] = i.value
+                                else {
+                                    scoreboards[player.uniqueId]!!.resetScores(LegacyComponentSerializer.builder().build().serialize(i.value))
+                                }
+                            }
+                        }
+                        val newList = scores.keys.sortedDescending()
+                        for (key in newList) {
+                            objective.getScore(LegacyComponentSerializer.builder().build().serialize(scores[key]!!)).score = newList.indexOf(key)
+                        }
+                    }
+
+                    return@JavaCallback V8Object(runtime).apply {
+                        val lines = HashMap<Int, Component>()
+                        var blankTxt = " "
+                        registerJavaMethod({ receiver, parameters ->
+                            updateScoreboard(lines)
+                        }, "update")
+                        registerJavaMethod({ receiver, parameters ->
+                            if(parameters.length() > 1) {
+                                lines[parameters[0] as Int] = MessageUtils.build(parameters[1] as String)
+                                updateScoreboard(lines)
+                            }
+                        }, "setLine")
+                        registerJavaMethod({ receiver, parameters ->
+                            if(parameters.length() > 0) {
+                                lines[parameters[0] as Int] = Component.text(blankTxt)
+                                blankTxt += " "
+                                updateScoreboard(lines)
+                            }
+                        }, "setBlankLine")
+                        registerJavaMethod({ receiver, parameters ->
+                            val arrV8 = V8Array(runtime)
+                            for (entry in lines) {
+                                arrV8.push(MessageUtils.toMiniMessage(entry.value))
+                            }
+                        }, "lines")
+                        registerJavaMethod({ receiver, parameters ->
+                            objective.displayName(MessageUtils.build(parameters[0] as String))
+                        }, "setDisplayName")
+                    }
+                }
+                return@JavaCallback null
+            }, "sidebar")
+            registerJavaMethod(JavaCallback { receiver, parameters ->
+                if (parameters.length() > 2) {
+                    lateinit var bossbar: BossBar
+                    if(parameters.length() > 3)
+                        if(parameters[3] is Int)
+                            bossbar = BossBar.bossBar(MessageUtils.build(parameters[0] as String), (parameters[3] as Int).toFloat(), BossBar.Color.valueOf((parameters[1] as String).uppercase()), BossBar.Overlay.valueOf((parameters[2] as String).uppercase()))
+                        else
+                            bossbar = BossBar.bossBar(MessageUtils.build(parameters[0] as String), (parameters[3] as Double).toFloat(), BossBar.Color.valueOf((parameters[1] as String).uppercase()), BossBar.Overlay.valueOf((parameters[2] as String).uppercase()))
+                    else
+                        bossbar = BossBar.bossBar(MessageUtils.build(parameters[0] as String), 0.0F, BossBar.Color.valueOf((parameters[1] as String).uppercase()), BossBar.Overlay.valueOf((parameters[2] as String).uppercase()))
+
+                    player.showBossBar(bossbar)
+                    return@JavaCallback V8Object(runtime).apply {
+                        registerJavaMethod(JavaCallback { receiver, parameters ->
+                            return@JavaCallback bossbar.color().toString().lowercase()
+                        }, "color")
+                        registerJavaMethod({ receiver, parameters ->
+                            player.hideBossBar(bossbar)
+                        }, "hide")
+                        registerJavaMethod({ receiver, parameters ->
+                            player.showBossBar(bossbar)
+                        }, "show")
+                        registerJavaMethod({ receiver, parameters ->
+                            if(parameters.length() > 0) {
+                                bossbar.color(BossBar.Color.valueOf((parameters[0] as String).uppercase()))
+                            }
+                        }, "setColor")
+                        registerJavaMethod(JavaCallback { receiver, parameters ->
+                            return@JavaCallback MessageUtils.toMiniMessage(bossbar.name())
+                        }, "text")
+                        registerJavaMethod({ receiver, parameters ->
+                            if(parameters.length() > 0) {
+                                bossbar.name(MessageUtils.build(parameters[0] as String))
+                            }
+                        }, "setText")
+                    }
+                }
+                return@JavaCallback null
+            }, "createBossbar")
         }
     }
 
@@ -93,15 +207,17 @@ object ObjectUtils {
     fun createItemStackObject(stack : ItemStack, runtime : V8) : V8Object.() -> Unit {
         return {
             var lore = V8Array(runtime)
-            for (lo in stack.lore()!!) {
-                lore.push(MessageUtils.toMiniMessage(lo))
+            if(stack.lore() != null) {
+                for (lo in stack.lore()!!) {
+                    lore.push(MessageUtils.toMiniMessage(lo))
+                }
             }
             val enchantments = V8Array(runtime)
             for (enchantment in stack.enchantments) {
                 enchantments.add(enchantment.key.key.key, enchantment.value)
             }
             if (stack.itemMeta.displayName() != null)
-                add("displayname", MessageUtils.toMiniMessage(stack.itemMeta.displayName()))
+                add("displayname", MessageUtils.toMiniMessage(stack.itemMeta.displayName()!!))
             add("amount", stack.amount)
             add("lore", lore)
             add("enchantment", enchantments)
