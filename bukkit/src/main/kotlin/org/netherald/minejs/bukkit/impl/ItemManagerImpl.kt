@@ -10,7 +10,7 @@ import org.netherald.minejs.bukkit.utils.ObjectUtils.createItemStackObject
 class ItemManagerImpl : ItemManager {
 
     override fun itemOf(runtime: V8, name: String): V8Object {
-        val material = Material.getMaterial(name) ?: return V8Object(runtime)
+        val material = Material.getMaterial(name.uppercase()) ?: return V8Object(runtime)
         return V8Object(runtime).apply(createItemStackObject(ItemStack(material),runtime))
     }
 }

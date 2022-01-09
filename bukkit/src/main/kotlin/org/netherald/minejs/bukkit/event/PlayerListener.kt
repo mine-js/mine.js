@@ -8,10 +8,8 @@ import net.kyori.adventure.text.TranslatableComponent
 import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerMoveEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.entity.FoodLevelChangeEvent
+import org.bukkit.event.player.*
 import org.bukkit.plugin.Plugin
 import org.netherald.minejs.bukkit.utils.MessageUtils
 import org.netherald.minejs.bukkit.utils.ObjectUtils
@@ -48,7 +46,46 @@ class PlayerListener(val plugin: Plugin) : Listener {
                 if (arguments.length() > 0) {
                     event.joinMessage(MessageUtils.build(arguments[0].toString()))
                 }
+                if (arguments.length() == 0) {
+                    event.joinMessage(null)
+                }
             }, "setJoinMessage")
+        }
+    }
+
+    @EventHandler
+    fun worldChange(event: PlayerChangedWorldEvent) {
+        ScriptLoader.invokeEvent("onPlayerWorldChange") {
+            add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(event.player, runtime)))
+            add("from", V8Object(runtime).apply(ObjectUtils.createWorldObject(event.from, runtime)))
+        }
+    }
+
+    @EventHandler
+    fun onPlayerFoodLevelChange(event: FoodLevelChangeEvent) {
+        ScriptLoader.invokeEvent("onFoodLevelChange") {
+            add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(Bukkit.getPlayer(event.entity.name)!!, runtime)))
+            add("foodLevel", event.foodLevel)
+
+            registerJavaMethod({ receiver, arguments ->
+                if (arguments.length() > 0) {
+                    event.foodLevel = arguments[0] as Int
+                    add("foodLevel", event.foodLevel)
+                }
+            }, "setFoodLevel")
+
+            registerJavaMethod({ receiver, arguments ->
+                if (arguments.length() > 0) {
+                    if (arguments[0] == true) {
+                        event.isCancelled = true;
+                    } else if (arguments[0] == false) {
+                        event.isCancelled = false;
+                    }
+                }
+            }, "setCancelled")
+            registerJavaMethod({ receiver, arguments ->
+                event.isCancelled = true
+            }, "cancel")
         }
     }
 
@@ -60,6 +97,9 @@ class PlayerListener(val plugin: Plugin) : Listener {
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
                     event.quitMessage(MessageUtils.build(arguments[0].toString()))
+                }
+                if (arguments.length() == 0) {
+                    event.quitMessage(null)
                 }
             }, "setQuitMessage")
         }

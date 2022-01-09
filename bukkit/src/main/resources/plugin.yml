@@ -6,7 +6,7 @@ version: 0.1
 author: Netherald
 authors:
   - Myoung2
-  - NamuTree0345
+  - R2turnTrue
   - Project_TL
 commands:
   minejs:
@@ -14,3 +14,7 @@ commands:
     aliases:
       - js
     usage: /<command> reload
+softdepend:
+  - ProtocolLib
+libraries:
+  - net.projecttl:InventoryGUI-api:4.2.0

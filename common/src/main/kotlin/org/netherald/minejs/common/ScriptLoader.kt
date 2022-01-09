@@ -1,6 +1,7 @@
 package org.netherald.minejs.common
 
 import com.eclipsesource.v8.*
+import io.alicorn.v8.V8JavaAdapter
 import java.io.File
 import java.lang.UnsupportedOperationException
 
@@ -12,6 +13,7 @@ object ScriptLoader {
     var libStr = ""
 
     private var commandManager: CommandManager? = null
+    private var javaManager: JavaManager? = null
 
     @Deprecated("Non used method!", ReplaceWith("invokeEvent", "org.netherald.minejs.common.ScriptLoader"))
     fun createV8Object(callback: V8Object.() -> Unit) : V8Object {
@@ -54,7 +56,8 @@ object ScriptLoader {
 
     var alreadyLoadStorage = false
 
-    fun load(scriptDirectory: File, storageFile: File, platform: Platform, playerManager: PlayerManager, itemManager: ItemManager, console: Console, commandManager: CommandManager, timeout: Timeout) {
+    fun load(scriptDirectory: File, storageFile: File, platform: Platform, playerManager: PlayerManager, itemManager: ItemManager, console: Console, commandManager: CommandManager, timeout: Timeout,
+            javaManager: JavaManager) {
         if(scriptDirectory.isDirectory) {
             val files = scriptDirectory.listFiles()
             files.sort()
@@ -71,6 +74,10 @@ object ScriptLoader {
                         runtime = V8.createV8Runtime()
                         runtimes[file] = runtime
                     }
+                    val imports = javaManager.getImports(file.name)
+                    for (import in imports) {
+                        V8JavaAdapter.injectClass(import, runtime)
+                    }
                     runtime.executeVoidScript("\"use strict\";\n" + libStr + "\n" + file.readText())
 
                     val consoleObject = V8Object(runtime)
@@ -79,6 +86,9 @@ object ScriptLoader {
                     runtime.add("console", consoleObject)
                     runtime.add("storage", storageObject)
 
+                    storageObject.registerJavaMethod(JavaCallback { receiver, parameters ->
+                        Storage.read(storageFile)
+                    }, "reload")
                     storageObject.registerJavaMethod(JavaCallback { receiver, parameters ->
                         if(parameters.length() > 0) {
                             if(!alreadyLoadStorage) {
@@ -129,18 +139,23 @@ object ScriptLoader {
                             console.log(parameters[0], file.name.replace(".js", ""))
                         }
                     }, "log")
+                    /*
                     runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
                         if(parameters.length() > 0)
                             return@JavaCallback JavaAccsessor.run(runtime, parameters[0] as String)
                         else
                             return@JavaCallback null
                     }, "jclass")
+                     */
                     runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
                         if(parameters.length() > 0)
                             return@JavaCallback playerManager.playerOf(runtime, parameters[0] as String)
                         else
                             return@JavaCallback null
                     }, "playerOf")
+                    runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
+                        return@JavaCallback playerManager.getPlayers(runtime)
+                    }, "getPlayers")
                     runtime.registerJavaMethod(JavaCallback { receiver, parameters ->
                         if (parameters.length() > 0)
                             return@JavaCallback itemManager.itemOf(runtime,parameters[0] as String)
@@ -169,6 +184,8 @@ object ScriptLoader {
                         }
                     },"createCommand")
 
+                    runtime.add("db", SqlFeature.initV8(V8Object(runtime)))
+
                     try {
                         runtime.executeVoidFunction("onInit", V8Array(runtime))
                     } catch (ex: V8ScriptExecutionException) {
@@ -177,6 +194,7 @@ object ScriptLoader {
                         }
                     }
 
+                    this.javaManager = javaManager
                     this.commandManager = commandManager
 
                     commandManager.registerCommands(commands)
@@ -187,17 +205,17 @@ object ScriptLoader {
 
     fun unload() {
         commandManager?.unloadCommands()
+        javaManager?.unload()
         //commandManager = null
         libStr = ""
         commands.clear()
         runtimes.clear()
-        /*
         for(itr in runtimes.iterator()) {
             if (runtimes.iterator().hasNext()) {
                 runtimes.iterator().next().value.release()
                 runtimes.iterator().remove()
             }
-        }*/
+        }
     }
 
 }

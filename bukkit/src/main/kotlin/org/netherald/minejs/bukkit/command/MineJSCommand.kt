@@ -12,6 +12,7 @@ import org.netherald.minejs.bukkit.impl.CommandManagerImpl
 import org.netherald.minejs.bukkit.impl.ConsoleImpl
 import org.netherald.minejs.bukkit.impl.ItemManagerImpl
 import org.netherald.minejs.bukkit.impl.PlayerManagerImpl
+import org.netherald.minejs.bukkit.utils.ObjectUtils
 import org.netherald.minejs.common.Platform
 import org.netherald.minejs.common.ScriptLoader
 import java.io.File
@@ -23,7 +24,10 @@ class MineJSCommand(private val plugin: MineJsBukkit) : CommandExecutor {
             return true
         }
         if (args[0] == "reload") {
+            plugin.reloadConfig()
             sender.sendMessage(Component.text("Loading scripts...", NamedTextColor.YELLOW))
+            ObjectUtils.scoreboards.clear()
+            ObjectUtils.entries.clear()
             ScriptLoader.unload()
             JavaPlugin.getPlugin(MineJsBukkit::class.java).load()
             sender.sendMessage(Component.text("Complete loading scripts", NamedTextColor.GREEN))

@@ -2,11 +2,10 @@ package org.netherald.minejs.common
 
 import com.eclipsesource.v8.*
 import org.reflections.util.Utils
-import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.util.*
 
-object JavaAccsessor {
+object JavaAccsessorOld {
 
     val objects = HashMap<String, Any>()
     val staticObjects = HashMap<String, Any>()
