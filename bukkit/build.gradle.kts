@@ -1,5 +1,6 @@
 plugins {
     id("com.github.johnrengelman.shadow") version "7.0.0"
+    `maven-publish`
 }
 
 repositories {
@@ -39,6 +40,17 @@ tasks {
         dependencies {
             exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib:1.5.21"))
             exclude(dependency("org.jetbrains.kotlin:kotlin-reflect:1.5.21"))
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            credentials {
+                username = rootProject.property("username") as String
+                password = rootProject.property("password") as String
+            }
         }
     }
 }
