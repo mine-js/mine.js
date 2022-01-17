@@ -1,0 +1,4 @@
+{
+  "name": "test",
+  "main": "xyz.minejs.addon.test.TestAddon"
+}

@@ -57,8 +57,56 @@ object ObjectUtils {
         return {
             if(!fromEntity)
                 apply(createEntityObject(player, runtime, true))
+            else
+                add("uuid", player.uniqueId.toString())
             add("name", player.name)
+            add("health", player.health)
             add("foodLevel", player.foodLevel)
+            add("inventory", V8Object(runtime).apply {
+                registerJavaMethod({ _, _ ->
+                    player.inventory.clear()
+                }, "clear")
+                registerJavaMethod({ _, parameters ->
+                    player.inventory.addItem(fromV8ItemStack(parameters[0] as V8Object, runtime))
+                }, "add")
+                registerJavaMethod(JavaCallback { _, parameters ->
+                    if(parameters.length() > 0) {
+                        val array = parameters[0] as V8Array
+                        for(i in 0 until array.length()) {
+                            val obj = array[i] as V8Object
+                            player.inventory.contents[obj.getInteger("index")] = fromV8ItemStack(obj.getObject("item"), runtime)
+                        }
+                        player.updateInventory()
+                        return@JavaCallback array
+                    }
+
+                    val array = V8Array(runtime)
+
+                    for (i in player.inventory.contents.indices) {
+                        val stack = player.inventory.contents[i]
+                        if(stack != null) {
+                            array.push(
+                                V8Object(runtime).apply {
+                                    add("index", i)
+                                    add("item", V8Object(runtime).apply(createItemStackObject(stack, runtime)))
+                                }
+                            )
+                        } else {
+                            array.push(
+                                V8Object(runtime).apply {
+                                    add("index", i)
+                                    add("item", V8Object(runtime).apply(createItemStackObject(ItemStack(Material.AIR), runtime)))
+                                }
+                            )
+                        }
+                    }
+
+                    return@JavaCallback array
+                }, "contents")
+            })
+            registerJavaMethod(JavaCallback { _, parameters ->
+                return@JavaCallback V8Object(runtime).apply(createEntityObject(player, runtime, true))
+            }, "entity")
             registerJavaMethod({ receiver, parameters ->
                 if (parameters.length() > 0) {
                     player.sendMessage(MessageUtils.build(parameters[0] as String))
@@ -68,6 +116,10 @@ object ObjectUtils {
                 player.foodLevel = parameters[0] as Int
                 add("foodLevel", player.foodLevel)
             }, "setFoodLevel")
+            registerJavaMethod({ receiver, parameters ->
+                player.health = parameters[0] as Double
+                add("health", player.health)
+            }, "setHealth")
             registerJavaMethod({ receiver, parameters ->
                 player.hidePlayer(MineJsBukkit.instance, Bukkit.getPlayer((parameters[0] as V8Object).getString("name"))!!)
             }, "hidePlayer")
@@ -256,6 +308,10 @@ object ObjectUtils {
                         registerJavaMethod({ receiver, parameters ->
                             objective.displayName(MessageUtils.build(parameters[0] as String))
                         }, "setDisplayName")
+                        registerJavaMethod({ _, _ ->
+                            objective.unregister()
+                            scoreboard.registerNewObjective(player.uniqueId.toString().split("-")[0], "dummy", MessageUtils.build(parameters[0] as String))
+                        }, "clear")
                     }
                 }
                 return@JavaCallback null

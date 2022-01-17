@@ -5,7 +5,7 @@ import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Function
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
-import org.netherald.minejs.common.Timeout
+import org.netherald.minejs.common.interfaces.Timeout
 
 class TimeoutImpl(val plugin: JavaPlugin) : Timeout {
 

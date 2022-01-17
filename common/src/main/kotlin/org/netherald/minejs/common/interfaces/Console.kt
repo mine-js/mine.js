@@ -1,4 +1,4 @@
-package org.netherald.minejs.common
+package org.netherald.minejs.common.interfaces
 
 abstract class Console {
 

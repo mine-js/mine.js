@@ -2,6 +2,7 @@ package org.netherald.minejs.bukkit.command
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -12,6 +13,7 @@ import org.netherald.minejs.bukkit.impl.CommandManagerImpl
 import org.netherald.minejs.bukkit.impl.ConsoleImpl
 import org.netherald.minejs.bukkit.impl.ItemManagerImpl
 import org.netherald.minejs.bukkit.impl.PlayerManagerImpl
+import org.netherald.minejs.bukkit.native.NativeLoader
 import org.netherald.minejs.bukkit.utils.ObjectUtils
 import org.netherald.minejs.common.Platform
 import org.netherald.minejs.common.ScriptLoader
@@ -28,10 +30,12 @@ class MineJSCommand(private val plugin: MineJsBukkit) : CommandExecutor {
             sender.sendMessage(Component.text("Loading scripts...", NamedTextColor.YELLOW))
             ObjectUtils.scoreboards.clear()
             ObjectUtils.entries.clear()
+            NativeLoader.disableAll()
             ScriptLoader.unload()
             JavaPlugin.getPlugin(MineJsBukkit::class.java).load()
             sender.sendMessage(Component.text("Complete loading scripts", NamedTextColor.GREEN))
 
+            Bukkit.getPluginManager().javaClass.classLoader
             return true
         }
         sendErrorMessage(sender)

@@ -1,9 +1,9 @@
-name: MineJS
+name: _MineJS # For plugin load order
 description: MineJS for Bukkit
 main: org.netherald.minejs.bukkit.MineJsBukkit
 api-version: 1.17
 version: 0.1
-author: Netherald
+author: MineJS
 authors:
   - Myoung2
   - R2turnTrue

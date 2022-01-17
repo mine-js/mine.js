@@ -1,6 +1,6 @@
-package org.netherald.minejs.common
+package org.netherald.minejs.common.interfaces
 
-import com.eclipsesource.v8.V8Array
+import org.netherald.minejs.common.Command
 
 interface CommandManager {
 

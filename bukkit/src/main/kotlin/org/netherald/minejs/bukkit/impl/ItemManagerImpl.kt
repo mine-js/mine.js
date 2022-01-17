@@ -4,7 +4,7 @@ import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Object
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
-import org.netherald.minejs.common.ItemManager
+import org.netherald.minejs.common.interfaces.ItemManager
 import org.netherald.minejs.bukkit.utils.ObjectUtils.createItemStackObject
 
 class ItemManagerImpl : ItemManager {

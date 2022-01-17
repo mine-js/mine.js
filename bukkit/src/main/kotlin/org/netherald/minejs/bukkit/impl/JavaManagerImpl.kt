@@ -1,7 +1,7 @@
 package org.netherald.minejs.bukkit.impl
 
 import org.netherald.minejs.bukkit.MineJsBukkit
-import org.netherald.minejs.common.JavaManager
+import org.netherald.minejs.common.interfaces.JavaManager
 import java.io.File
 import java.net.URLClassLoader
 

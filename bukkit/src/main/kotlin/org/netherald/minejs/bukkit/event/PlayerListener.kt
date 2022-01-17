@@ -16,12 +16,13 @@ import org.netherald.minejs.bukkit.utils.ObjectUtils
 import org.netherald.minejs.common.ScriptLoader
 
 class PlayerListener(val plugin: Plugin) : Listener {
+    /*
     @EventHandler
     fun playerMove(event: PlayerMoveEvent) {
         ScriptLoader.invokeEvent("onPlayerMove") {
             add("from", V8Object(runtime).apply(ObjectUtils.createLocationObject(event.from, runtime)))
             add("to", V8Object(runtime).apply(ObjectUtils.createLocationObject(event.to, runtime)))
-            add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(event.player, runtime)))
+            add("player", V8Object(runtime).apply(ObjectUtils.createPlayerObject(event.player, runtime, true)))
             registerJavaMethod({ receiver, arguments ->
                 if (arguments.length() > 0) {
                     if (arguments[0] == true) {
@@ -36,6 +37,7 @@ class PlayerListener(val plugin: Plugin) : Listener {
             }, "cancel")
         }
     }
+     */
 
     @EventHandler
     fun playerJoin(event: PlayerJoinEvent) {

@@ -10,6 +10,7 @@ import org.netherald.minejs.bukkit.event.EntityListener
 import org.netherald.minejs.bukkit.event.MiscListener
 import org.netherald.minejs.bukkit.event.PlayerListener
 import org.netherald.minejs.bukkit.impl.*
+import org.netherald.minejs.bukkit.native.NativeLoader
 import org.netherald.minejs.bukkit.utils.ProtocolUtil
 import org.netherald.minejs.common.Platform
 import org.netherald.minejs.common.ScriptLoader
@@ -49,12 +50,15 @@ class MineJsBukkit : JavaPlugin() {
     }
 
     override fun onDisable() {
+        NativeLoader.disableAll()
         ScriptLoader.unload()
     }
 
     fun load() {
         Bukkit.getScheduler().cancelTasks(this)
-        ScriptLoader.load(scriptsDir, File(scriptsDir, "storage.json"), Platform.BUKKIT, PlayerManagerImpl(), ItemManagerImpl(), ConsoleImpl(this), CommandManagerImpl(this), TimeoutImpl(this), JavaManagerImpl())
+        logger.info("Loading native addons...")
+        NativeLoader.enableAll(File(dataFolder, "addons"))
+        ScriptLoader.load(scriptsDir, File(scriptsDir, "storage.json"), Platform.BUKKIT, PlayerManagerImpl(), ItemManagerImpl(), ConsoleImpl(this), CommandManagerImpl(this), TimeoutImpl(this), JavaManagerImpl(), NativeInitImpl())
     }
 
 }

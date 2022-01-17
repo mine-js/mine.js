@@ -16,7 +16,7 @@ dependencies {
     implementation("net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT")
     implementation("com.eclipsesource.j2v8:j2v8:6.2.1")
     implementation("com.eclipsesource.j2v8:j2v8_win32_x86_64:4.6.0")
-    implementation("com.eclipsesource.j2v8:j2v8_linux_x86_64:4.8.0")
+    implementation("com.eclipsesource.j2v8:j2v8_linux_x86_64:4.6.0")
     implementation("com.eclipsesource.j2v8:j2v8_macosx_x86_64:4.6.0")
     implementation("com.google.code.gson:gson:2.8.0")
     implementation("io.alicorn.v8:v8-adapter:1.59")

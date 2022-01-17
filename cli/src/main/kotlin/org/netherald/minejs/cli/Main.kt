@@ -4,6 +4,10 @@ import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
 import org.netherald.minejs.common.*
+import org.netherald.minejs.common.interfaces.CommandManager
+import org.netherald.minejs.common.interfaces.Console
+import org.netherald.minejs.common.interfaces.ItemManager
+import org.netherald.minejs.common.interfaces.PlayerManager
 import java.io.File
 import java.lang.UnsupportedOperationException
 import java.util.*

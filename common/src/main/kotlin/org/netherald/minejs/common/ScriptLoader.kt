@@ -2,6 +2,7 @@ package org.netherald.minejs.common
 
 import com.eclipsesource.v8.*
 import io.alicorn.v8.V8JavaAdapter
+import org.netherald.minejs.common.interfaces.*
 import java.io.File
 import java.lang.UnsupportedOperationException
 
@@ -57,7 +58,7 @@ object ScriptLoader {
     var alreadyLoadStorage = false
 
     fun load(scriptDirectory: File, storageFile: File, platform: Platform, playerManager: PlayerManager, itemManager: ItemManager, console: Console, commandManager: CommandManager, timeout: Timeout,
-            javaManager: JavaManager) {
+             javaManager: JavaManager, nativeInit: NativeInit = NativeInit.Companion.DefaultNativeInit()) {
         if(scriptDirectory.isDirectory) {
             val files = scriptDirectory.listFiles()
             files.sort()
@@ -185,6 +186,7 @@ object ScriptLoader {
                     },"createCommand")
 
                     runtime.add("db", SqlFeature.initV8(V8Object(runtime)))
+                    runtime.apply(nativeInit.init())
 
                     try {
                         runtime.executeVoidFunction("onInit", V8Array(runtime))
