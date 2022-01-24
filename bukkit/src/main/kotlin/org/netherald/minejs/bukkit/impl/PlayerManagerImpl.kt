@@ -26,8 +26,7 @@ class PlayerManagerImpl : PlayerManager {
     }
 
     override fun playerOf(runtime: V8, name: String): V8Object {
-        val player = Bukkit.getPlayer(name)
-        return if (player != null) V8Object(runtime).apply(createPlayerObject(player, runtime))
-            else V8Object(runtime)
+        val player = Bukkit.getPlayer(name) ?: return V8Object(runtime)
+        return V8Object(runtime).apply(createPlayerObject(player, runtime))
     }
 }

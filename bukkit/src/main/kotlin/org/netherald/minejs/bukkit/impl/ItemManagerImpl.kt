@@ -8,9 +8,8 @@ import org.netherald.minejs.common.interfaces.ItemManager
 import org.netherald.minejs.bukkit.utils.ObjectUtils.createItemStackObject
 
 class ItemManagerImpl : ItemManager {
-
-    override fun itemOf(runtime: V8, name: String): V8Object {
-        val material = Material.getMaterial(name.uppercase()) ?: return V8Object(runtime)
-        return V8Object(runtime).apply(createItemStackObject(ItemStack(material),runtime))
+    override fun itemOf(runtime: V8, material: String): V8Object {
+        val bukkitMaterial = Material.getMaterial(material.uppercase()) ?: return V8Object(runtime)
+        return V8Object(runtime).apply(createItemStackObject(ItemStack(bukkitMaterial),runtime))
     }
 }

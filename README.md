@@ -10,7 +10,7 @@ Minecraft Bukkit Scripting with JS by Netherald
 </div>
 
 ## How to apply?
-Download Paper or Bungee Version. and put it to plugins folder.\
+Download Paper or Bungee Version. and put it to the plugins folder.\
 Script folder is `plugins/js`!
 ## How to build?
 Run build task of Bukkit or Bungee module!

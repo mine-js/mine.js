@@ -7,7 +7,7 @@ import java.net.URLClassLoader
 
 class JavaManagerImpl : JavaManager {
 
-    val externalLoaders = ArrayList<URLClassLoader>()
+    private val externalLoaders = ArrayList<URLClassLoader>()
 
     init {
         val libraries = File(MineJsBukkit.instance.dataFolder, "libraries")
@@ -41,15 +41,11 @@ class JavaManagerImpl : JavaManager {
         val imports = section.getStringList(filename)
         val result = ArrayList<Class<*>>()
         for (import in imports) {
-            lateinit var clazz: Class<*>
-
-            try {
-                clazz = Class.forName(import)
+            result.add(try {
+                Class.forName(import)
             } catch (ex: ClassNotFoundException) {
-                clazz = getClass(import)
-            }
-
-            result.add(clazz)
+                getClass(import)
+            })
         }
 
         return result

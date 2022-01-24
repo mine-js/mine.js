@@ -21,7 +21,7 @@ object UIUtils {
                 actions[parameters[0] as Int] = parameters[2] as V8Function
             }, "slot")
 
-            registerJavaMethod({ _, parameters ->
+            registerJavaMethod({ _, _ ->
                 val type = when(size) {
                     9 -> InventoryType.CHEST_9
                     18 -> InventoryType.CHEST_18

@@ -16,23 +16,21 @@ object ProtocolUtil {
     }
 
     fun createPacketContainer(isClient: Boolean, packetId: String, senderRaw: String): PacketContainer {
-        lateinit var type: Class<out PacketTypeEnum>
-
-        if(isClient) {
+        val type: Class<out PacketTypeEnum> = if(isClient) {
             when(senderRaw.lowercase()) {
-                "play" -> type = PacketType.Play.Client::class.java
-                "handshake" -> type = PacketType.Handshake.Client::class.java
-                "login" -> type = PacketType.Login.Client::class.java
-                "status" -> type = PacketType.Status.Client::class.java
-                else -> type = PacketType.Play.Client::class.java
+                "play" -> PacketType.Play.Client::class.java
+                "handshake" -> PacketType.Handshake.Client::class.java
+                "login" -> PacketType.Login.Client::class.java
+                "status" -> PacketType.Status.Client::class.java
+                else -> PacketType.Play.Client::class.java
             }
         } else {
             when(senderRaw.lowercase()) {
-                "play" -> type = PacketType.Play.Server::class.java
-                "handshake" -> type = PacketType.Handshake.Server::class.java
-                "login" -> type = PacketType.Login.Server::class.java
-                "status" -> type = PacketType.Status.Server::class.java
-                else -> type = PacketType.Play.Server::class.java
+                "play" -> PacketType.Play.Server::class.java
+                "handshake" -> PacketType.Handshake.Server::class.java
+                "login" -> PacketType.Login.Server::class.java
+                "status" -> PacketType.Status.Server::class.java
+                else -> PacketType.Play.Server::class.java
             }
         }
 

@@ -29,23 +29,27 @@ class MineJsBukkit : JavaPlugin() {
     override fun onEnable() {
         instance = this
         saveDefaultConfig()
-        Bukkit.getPluginManager().registerEvents(PlayerListener(this), this)
+        Bukkit.getPluginManager().registerEvents(PlayerListener(), this)
         Bukkit.getPluginManager().registerEvents(EntityListener(), this)
         Bukkit.getPluginManager().registerEvents(BlockListener(), this)
-        Bukkit.getPluginManager().registerEvents(MiscListener(this), this)
+        Bukkit.getPluginManager().registerEvents(MiscListener(), this)
 
         getCommand("minejs")!!.setExecutor(MineJSCommand(this))
         getCommand("minejs")!!.tabCompleter = MineJSTabCompleter()
 
         protocolEnabled = Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")
-        if(protocolEnabled)
+        if(protocolEnabled) {
             ProtocolUtil.init()
-        else
-            logger.warning("You may not use packet feature. Install ProtocolLib to use packet feature!")
+        } else {
+            logger.warning("ProtocolLib is required to use the packet feature. Please install ProtocolLib.")
+        }
 
         logger.info("Loading scripts...")
-        if(!scriptsDir.exists())
+
+        if(!scriptsDir.exists()) {
             scriptsDir.mkdir()
+        }
+
         load()
     }
 

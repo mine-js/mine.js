@@ -19,7 +19,10 @@ class CustomCommand(val command: Command) : BukkitCommand(command.name) {
         for(arg in args) {
             argsV8.push(arg)
         }
-        command.callback.call(command.runtime, V8Array(command.runtime).push(argsV8).push(V8Object(command.runtime).apply(ObjectUtils.createCommandSenderObject(sender, command.runtime))))
+        command.callback.call(command.runtime, V8Array(command.runtime)
+                .push(argsV8)
+                .push(V8Object(command.runtime).apply(ObjectUtils.createCommandSenderObject(sender, command.runtime))))
+
         return true
     }
 }
