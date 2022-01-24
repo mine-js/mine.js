@@ -1,6 +1,5 @@
 package xyz.minejs.addon.test
 
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material

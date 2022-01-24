@@ -43,14 +43,3 @@ tasks {
         }
     }
 }
-
-publishing {
-    repositories {
-        maven {
-            credentials {
-                username = rootProject.property("username") as String
-                password = rootProject.property("password") as String
-            }
-        }
-    }
-}
